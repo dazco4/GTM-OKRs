@@ -1,0 +1,1729 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MoeGo GTM OS</title>
+
+<!-- React + Babel (cdnjs, works in Claude preview and GitHub Pages) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+
+<!-- Firebase (loads on a real host; preview falls back to local-only mode automatically) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<!-- Source Sans 3 (Toast's body typeface) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* Seattle Kraken: Deep Sea Blue (#001628) base, Boundless/Ice Blue accents, Red Alert (#E9072B) */
+  --deep:#001628; --deep-2:#022f4c;
+  --navy:#013a5e; --navy-700:#0a4d76; --navy-600:#14618f;
+  --blue:#0f5a82; --blue-500:#176d9c; --sky:#5cb4dc;
+  --boundless:#88d0ec; --ice:#99d9d9;
+  --sky-300:#9fd4ea; --sky-200:#c4e6f5; --sky-100:#e3f2fb; --sky-50:#f1f8fd;
+  --ice-bg:#e9f6f6;
+  --bg:#e8f1fb; --panel:#ffffff; --panel-2:#f6fafd;
+  --line:#e2ecf3; --line-strong:#ccdded;
+  --ink:#03243c; --ink-soft:#2e4f68; --muted:#5f7a8c; --muted-2:#8fa6b4;
+  --green:#11936a; --green-bg:#e3f5ee;
+  --amber:#c2820f; --amber-bg:#fbefd6;
+  --red:#e9072b; --red-bg:#fde2e6;
+  --grey:#7e96a6; --grey-bg:#eef3f7;
+  --shadow:0 1px 2px rgba(0,22,40,.05), 0 6px 20px rgba(0,22,40,.06);
+  --shadow-lg:0 16px 48px rgba(0,22,40,.20);
+  --r:12px; --r-sm:8px; --r-lg:16px;
+  --side:240px;
+  --font:'Source Sans 3',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{font-family:var(--font);background:var(--bg);color:var(--ink);font-size:14.5px;line-height:1.5;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+#root{min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px}
+a{color:var(--blue);text-decoration:none}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:#d3e0ea;border-radius:8px;border:2px solid var(--bg)}
+::-webkit-scrollbar-thumb:hover{background:#bcccda}
+
+/* ---------- App shell ---------- */
+.app{display:flex;min-height:100vh}
+.side{width:var(--side);flex:0 0 var(--side);background:linear-gradient(180deg,#001628 0%, #022f4c 100%);color:#dce9f8;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{padding:18px 18px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(255,255,255,.08)}
+.brand .logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#88d0ec,#0a4d76);display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:15px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.brand b{font-size:15px;color:#fff;letter-spacing:-.2px;display:block;line-height:1.1}
+.brand small{font-size:11px;color:#8fc4e6;letter-spacing:.3px}
+.nav{padding:10px 10px;flex:1;overflow:auto}
+.nav .grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.9px;color:#7fb2d8;padding:14px 10px 6px}
+.nav a{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:9px;color:#cfe2f3;font-weight:500;font-size:13.5px;margin:1px 0;cursor:pointer;transition:background .12s,color .12s;border:1px solid transparent}
+.nav a .ic{width:17px;text-align:center;opacity:.92;font-size:14px}
+.nav a:hover{background:rgba(136,208,236,.12);color:#fff}
+.nav a.on{background:rgba(136,208,236,.20);color:#fff;border-color:rgba(136,208,236,.36)}
+.nav a .badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;font-size:10.5px;font-weight:700;padding:1px 7px;min-width:18px;text-align:center}
+.nav a.on .badge,.nav a:hover .badge{}
+.side .who{border-top:1px solid rgba(255,255,255,.08);padding:11px 13px;display:flex;align-items:center;gap:9px;font-size:12.5px}
+.side .who .av{flex:0 0 auto}
+.side .who .meta{min-width:0}
+.side .who .meta b{color:#fff;font-weight:600;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side .who .meta span{color:#8fc4e6;font-size:11px}
+.side .who button{margin-left:auto;background:transparent;border:1px solid rgba(255,255,255,.18);color:#bcd5f0;border-radius:7px;padding:4px 8px;font-size:11px}
+.side .who button:hover{background:rgba(255,255,255,.08)}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:30;background:rgba(232,240,251,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);padding:14px 32px 16px;display:flex;flex-direction:column;align-items:stretch;gap:13px}
+.top-row{display:flex;align-items:center;gap:16px}
+.top h1{font-size:21px;margin:0;letter-spacing:-.4px;font-weight:700;color:var(--ink)}
+.top .sub{color:var(--muted);font-size:13px;margin-top:2px}
+.top .sync{margin-left:auto;display:flex;align-items:center;gap:9px}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+.sync .pill{display:inline-flex;align-items:center;gap:6px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:5px 11px;font-size:12px;color:var(--ink-soft);font-weight:500}
+.content{padding:30px 32px 100px;max-width:none;width:100%}
+
+/* ---------- Buttons ---------- */
+.btn{display:inline-flex;align-items:center;gap:7px;background:var(--panel);border:1px solid var(--line-strong);color:var(--ink-soft);border-radius:8px;padding:7px 13px;font-size:13px;font-weight:600;transition:.12s}
+.btn:hover{background:var(--sky-50);border-color:var(--sky-300)}
+.btn.primary{background:linear-gradient(180deg,var(--blue-500),var(--blue));border-color:var(--blue);color:#fff;box-shadow:0 1px 2px rgba(18,48,90,.18)}
+.btn.primary:hover{background:linear-gradient(180deg,var(--blue),var(--navy-600));border-color:var(--navy-600)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--blue)}
+.btn.ghost:hover{background:var(--sky-100)}
+.btn.danger{color:var(--red);border-color:#eccaca}
+.btn.danger:hover{background:var(--red-bg)}
+.btn.sm{padding:5px 10px;font-size:12px}
+.btn.icon{padding:7px 9px}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+
+/* ---------- Cards / panels ---------- */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.row{display:flex;gap:16px}
+.grid{display:grid;gap:16px}
+.muted{color:var(--muted)}
+.tiny{font-size:11.5px}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);font-weight:700;margin:0 0 10px}
+
+/* ---------- Pills / chips ---------- */
+.pill-s{display:inline-flex;align-items:center;gap:5px;border-radius:20px;padding:3px 9px;font-size:11.5px;font-weight:650;white-space:nowrap;border:1px solid transparent}
+.s-green{background:var(--green-bg);color:#137a50;border-color:#c6ecd9}
+.s-amber{background:var(--amber-bg);color:#9a6608;border-color:#f0deb5}
+.s-red{background:var(--red-bg);color:#b23838;border-color:#f1c9c9}
+.s-grey{background:var(--grey-bg);color:#54697d;border-color:#dde6ef}
+.s-blue{background:var(--sky-100);color:#0b4d76;border-color:var(--sky-200)}
+.s-navy{background:#d8e9f4;color:var(--navy);border-color:#bad7e8}
+.hdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 0 3px rgba(0,0,0,.04)}
+.pill-s.click{cursor:pointer;transition:box-shadow .12s,filter .12s}
+.pill-s.click:hover{box-shadow:0 0 0 2px rgba(0,22,40,.12);filter:saturate(1.1)}
+
+/* ---------- Disclosure (collapsible) ---------- */
+.disc{border-top:1px solid var(--line)}
+.disc-head{display:flex;align-items:center;gap:9px;padding:13px 2px;cursor:pointer;user-select:none}
+.disc-head:hover .disc-title{color:var(--navy)}
+.disc-title{font-size:12px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);font-weight:700;transition:color .12s}
+.disc-count{font-size:11px;font-weight:700;color:var(--navy);background:var(--sky-100);border:1px solid var(--sky-200);border-radius:20px;padding:1px 8px}
+.disc-chev{margin-left:auto;color:var(--muted-2);font-size:12px;transition:transform .18s ease}
+.disc-chev.open{transform:rotate(90deg)}
+.disc-body{padding:2px 2px 14px}
+
+/* ---------- Target label ---------- */
+.target{display:inline-flex;flex-direction:column;align-items:center;line-height:1.1}
+.okr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:18px;align-content:start}
+.okr-grid>.card{display:flex;flex-direction:column}
+@media(max-width:980px){.okr-grid{grid-template-columns:1fr}}
+.target .lbl{font-size:9.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted-2);font-weight:700}
+.target .val{font-size:13.5px;font-weight:800;color:var(--navy);letter-spacing:-.1px}
+
+/* ---------- Global search ---------- */
+.search-wrap{position:relative;width:100%;max-width:none;min-width:0}
+.search-inp{width:100%;border:1px solid var(--line-strong);border-radius:11px;padding:11px 14px 11px 40px;background:var(--panel);color:var(--ink);outline:none;font-size:14.5px;transition:.12s}
+.search-inp:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(136,208,236,.30)}
+.search-ic{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted-2);font-size:15px;pointer-events:none;opacity:.7}
+.search-pop{position:absolute;top:calc(100% + 8px);left:0;width:min(720px,calc(100vw - 40px));background:var(--panel);border:1px solid var(--line-strong);border-radius:14px;box-shadow:var(--shadow-lg);max-height:66vh;overflow-y:auto;overflow-x:hidden;z-index:60;padding:8px}
+.search-grp{font-size:10.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted-2);font-weight:700;padding:10px 12px 5px}
+.search-item{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;cursor:pointer}
+.search-item:hover{background:var(--sky-50)}
+.search-item .si-t{flex:1 1 auto;min-width:0;font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-item .si-k{flex:0 0 auto;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted-2)}
+.search-empty{padding:20px 14px;text-align:center;color:var(--muted);font-size:13.5px}
+.av img{width:100%;height:100%;object-fit:cover;display:block}
+
+/* ---------- Avatars ---------- */
+.av{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;letter-spacing:.2px;flex:0 0 auto;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.av.lg{width:34px;height:34px;font-size:13px}
+.av.md{width:30px;height:30px;font-size:12px}
+.av.xl{width:58px;height:58px;font-size:20px;border-radius:50%}
+.av.sm{width:21px;height:21px;font-size:9.5px}
+.av-stack{display:inline-flex}
+.av-stack .av{margin-left:-7px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25),0 0 0 2px var(--panel)}
+.av-stack .av:first-child{margin-left:0}
+
+/* ---------- Tables ---------- */
+.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.tbl th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);font-weight:700;padding:10px 12px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr{cursor:pointer;transition:background .1s}
+.tbl tbody tr:hover{background:var(--sky-50)}
+.tbl .title-cell{font-weight:650;color:var(--ink)}
+.tbl .title-cell small{display:block;font-weight:500;color:var(--muted);font-size:11.5px;margin-top:2px}
+
+/* ---------- Forms ---------- */
+.field{margin-bottom:14px}
+.field label{display:block;font-size:12px;font-weight:650;color:var(--ink-soft);margin-bottom:5px}
+.field .hint{font-weight:500;color:var(--muted-2);font-size:11px;margin-left:6px}
+.inp,select.inp,textarea.inp{width:100%;border:1px solid var(--line-strong);border-radius:8px;padding:9px 11px;background:var(--panel);color:var(--ink);transition:.12s;outline:none}
+.inp:focus,textarea.inp:focus,select.inp:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(94,169,230,.22)}
+textarea.inp{resize:vertical;min-height:62px;line-height:1.5}
+.inp::placeholder{color:#a8bccf}
+.f-row{display:flex;gap:12px}
+.f-row>*{flex:1}
+.chk-grid{display:flex;flex-wrap:wrap;gap:7px}
+.chk{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line-strong);border-radius:20px;padding:5px 11px 5px 9px;font-size:12.5px;cursor:pointer;background:var(--panel);user-select:none;font-weight:550;color:var(--ink-soft)}
+.chk:hover{border-color:var(--sky-300);background:var(--sky-50)}
+.chk.on{background:var(--sky-100);border-color:var(--sky);color:var(--navy-700)}
+.chk input{display:none}
+.seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;background:var(--panel)}
+.seg button{border:none;background:transparent;padding:7px 12px;font-size:12.5px;font-weight:600;color:var(--muted);border-right:1px solid var(--line)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--navy);color:#fff}
+
+/* ---------- Modal / Drawer ---------- */
+.scrim{position:fixed;inset:0;background:rgba(15,36,61,.42);backdrop-filter:blur(2px);z-index:60;display:flex;animation:fade .14s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal{margin:auto;background:var(--panel);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:min(560px,94vw);max-height:90vh;overflow:auto;animation:pop .16s ease}
+@keyframes pop{from{transform:translateY(8px) scale(.99);opacity:.6}to{transform:none;opacity:1}}
+.modal .mh{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.modal .mh h3{margin:0;font-size:16px;letter-spacing:-.2px}
+.modal .mb{padding:18px 20px}
+.modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px;justify-content:flex-end;background:var(--panel-2);border-radius:0 0 var(--r-lg) var(--r-lg);position:sticky;bottom:0}
+.x{margin-left:auto;border:none;background:transparent;color:var(--muted);font-size:20px;line-height:1;padding:2px 6px;border-radius:6px}
+.x:hover{background:var(--sky-100);color:var(--ink)}
+
+.drawer-scrim{position:fixed;inset:0;background:rgba(15,36,61,.34);z-index:55;animation:fade .14s ease}
+.drawer{position:fixed;top:0;right:0;height:100vh;width:min(640px,96vw);background:var(--panel);box-shadow:var(--shadow-lg);z-index:56;display:flex;flex-direction:column;animation:slide .2s cubic-bezier(.2,.8,.2,1)}
+@keyframes slide{from{transform:translateX(40px);opacity:.4}to{transform:none;opacity:1}}
+.drawer .dh{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
+.drawer .db{padding:20px 22px;overflow:auto;flex:1}
+.crumb{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px}
+.crumb a{cursor:pointer;color:var(--blue)}
+.crumb a:hover{text-decoration:underline}
+
+/* ---------- Misc layout helpers ---------- */
+.kv{display:grid;grid-template-columns:118px 1fr;gap:8px 14px;align-items:start;font-size:13px}
+.kv .k{color:var(--muted);font-weight:600;font-size:12px;padding-top:2px}
+.spread{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px}
+.stat .n{font-size:26px;font-weight:780;letter-spacing:-.6px;line-height:1}
+.stat .l{font-size:11.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-top:7px}
+.stat.alert .n{color:var(--red)}
+.stat.warn .n{color:var(--amber)}
+.stat.good .n{color:var(--green)}
+.bar{height:7px;border-radius:6px;background:var(--sky-100);overflow:hidden}
+.bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--blue-500),var(--sky))}
+.empty{text-align:center;padding:44px 20px;color:var(--muted)}
+.empty .big{font-size:30px;margin-bottom:8px}
+.tag-due{font-weight:650}
+.tag-due.over{color:var(--red)}
+.tag-due.soon{color:var(--amber)}
+.flag{display:inline-flex;align-items:center;gap:6px;background:var(--red-bg);color:#b23838;border:1px solid #f1c9c9;border-radius:8px;padding:7px 11px;font-size:12.5px;font-weight:600}
+.note{border-left:3px solid var(--sky);background:var(--sky-50);padding:9px 12px;border-radius:0 8px 8px 0;font-size:13px}
+.linkish{cursor:pointer;color:var(--blue);font-weight:600}
+.linkish:hover{text-decoration:underline}
+.hl{background:linear-gradient(180deg,transparent 60%,#fff2c4 60%)}
+.divider{height:1px;background:var(--line);margin:18px 0}
+.banner{background:#fff7e6;border:1px solid #f3e2bb;color:#8a6516;border-radius:10px;padding:10px 14px;font-size:12.5px;display:flex;align-items:center;gap:10px}
+.banner.info{background:var(--sky-50);border-color:var(--sky-200);color:#1d5896}
+
+/* next steps */
+.ns{display:flex;gap:10px;padding:10px 0;border-bottom:1px dashed var(--line)}
+.ns:last-child{border-bottom:none}
+.ns .box{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--line-strong);flex:0 0 auto;margin-top:1px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;font-size:12px;background:var(--panel)}
+.ns .box.done{background:var(--green);border-color:var(--green)}
+.ns .body{flex:1;min-width:0}
+.ns .body .t{font-weight:550}
+.ns .body.done .t{text-decoration:line-through;color:var(--muted)}
+.ns .meta-line{font-size:11px;color:var(--muted-2);margin-top:3px;display:flex;gap:10px;flex-wrap:wrap}
+
+/* setup screen */
+.setup-wrap{max-width:720px;margin:40px auto;padding:0 20px}
+.steps{counter-reset:s}
+.step{display:flex;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.step .num{counter-increment:s;flex:0 0 28px;height:28px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
+.step .num::before{content:counter(s)}
+.step h4{margin:2px 0 4px;font-size:14px}
+.code{background:#0f243d;color:#cfe3fb;border-radius:8px;padding:11px 13px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px;overflow:auto;white-space:pre;margin:8px 0}
+
+@media (max-width:860px){
+  :root{--side:0px}
+  .side{position:fixed;left:0;top:0;z-index:80;width:230px;transform:translateX(-100%);transition:transform .2s}
+  .side.open{transform:none}
+  .menu-btn{display:inline-flex!important}
+  .content{padding:16px 14px 90px}
+  .top{padding:12px 14px}
+  .f-row{flex-direction:column}
+}
+.menu-btn{display:none;border:1px solid var(--line-strong);background:var(--panel);border-radius:8px;padding:7px 10px}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel" data-presets="react">
+/* ============================================================
+   MoeGo GTM OS  -  single-file app
+   ------------------------------------------------------------
+   TO CONNECT YOUR LIVE SHARED DATABASE (so the team sees each
+   other's edits in real time), paste your Firebase config below.
+   The in-app Setup screen walks you through getting it.
+   Until then, the app runs in LOCAL-ONLY mode (this browser only).
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDOCM-Dbd3GtE-ARMwuRtLO1o2-eF5_Ifk",
+  authDomain: "moego-gtm-okrs.firebaseapp.com",
+  databaseURL: "https://moego-gtm-okrs-default-rtdb.firebaseio.com",
+  projectId: "moego-gtm-okrs",
+  storageBucket: "moego-gtm-okrs.firebasestorage.app",
+  messagingSenderId: "186419386936",
+  appId: "1:186419386936:web:51d9a40b18b0eadb52a4cd"
+};
+// Optional: lock access to specific Google accounts (lowercase emails).
+// Leave empty [] to allow anyone who signs in with Google + knows the URL.
+const ALLOWED_EMAILS = [
+  "kev.dazkevich@moego.pet",
+  "cloud.wu@moego.pet",
+  "chris.vanwart@moego.pet",
+  "david.jacobs@moego.pet",
+  "nathan.gifford@moego.pet",
+  "naveen.love@moego.pet",
+  "steven.miller@moego.pet",
+  "samantha.eastham@moego.pet",
+  "ethan@mymoement.com",
+  "emma@moego.pet"
+];
+
+const { useState, useEffect, useMemo, useRef, useCallback, createContext, useContext } = React;
+
+/* ---------------- helpers ---------------- */
+const uid = (p='id') => p + '_' + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-4);
+const nowISO = () => new Date().toISOString();
+const todayStr = () => new Date().toISOString().slice(0,10);
+const STALE_DAYS = 7;
+
+function fmtDate(d){
+  if(!d) return '';
+  const dt = new Date(d.length<=10 ? d+'T00:00:00' : d);
+  if(isNaN(dt)) return '';
+  return dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
+}
+function fmtDateShort(d){
+  if(!d) return '';
+  const dt = new Date(d.length<=10 ? d+'T00:00:00' : d);
+  if(isNaN(dt)) return '';
+  return dt.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+}
+function daysFromNow(d){
+  if(!d) return null;
+  const dt = new Date(d.length<=10 ? d+'T00:00:00' : d);
+  if(isNaN(dt)) return null;
+  const ms = dt - new Date(todayStr()+'T00:00:00');
+  return Math.round(ms/86400000);
+}
+function relTime(iso){
+  if(!iso) return 'never';
+  const diff = Date.now() - new Date(iso).getTime();
+  const d = Math.floor(diff/86400000);
+  if(d<=0){ const h=Math.floor(diff/3600000); if(h<=0){const m=Math.floor(diff/60000); return m<=1?'just now':m+'m ago';} return h+'h ago';}
+  if(d===1) return 'yesterday';
+  if(d<30) return d+'d ago';
+  return fmtDateShort(iso);
+}
+function isOverdue(d, status){ if(status==='done'||!d) return false; const n=daysFromNow(d); return n!==null && n<0; }
+function isStale(lastActivity, status){ if(status==='done'||!lastActivity) return status!=='done' && !lastActivity; const diff=Date.now()-new Date(lastActivity).getTime(); return diff > STALE_DAYS*86400000; }
+
+const AV_COLORS = ['#2f6fb3','#1f9d6b','#c9881a','#7d57c9','#d24d4d','#0f8a8a','#c2578f','#3d6fb0','#5a8f3a','#b5642a'];
+function colorFor(id){ let h=0; const s=String(id||''); for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))>>>0; return AV_COLORS[h%AV_COLORS.length]; }
+function initials(name){ if(!name) return '?'; const p=name.trim().split(/\s+/); return ((p[0]||'')[0]||'' ).toUpperCase()+((p[1]||'')[0]||'').toUpperCase(); }
+
+/* ---------------- constants ---------------- */
+const STATUS = {
+  not_started:{label:'Not started',cls:'s-grey'},
+  in_progress:{label:'In progress',cls:'s-blue'},
+  blocked:{label:'Blocked',cls:'s-red'},
+  done:{label:'Done',cls:'s-green'},
+};
+const STATUS_ORDER = ['not_started','in_progress','blocked','done'];
+const HEALTH = {
+  on_track:{label:'On track',color:'var(--green)',cls:'s-green'},
+  at_risk:{label:'At risk',color:'var(--amber)',cls:'s-amber'},
+  off_track:{label:'Off track',color:'var(--red)',cls:'s-red'},
+};
+const HEALTH_ORDER = ['on_track','at_risk','off_track'];
+const CONVICTION = {
+  high:{label:'High Conviction',cls:'s-navy'},
+  gate:{label:'Gate to Success',cls:'s-amber'},
+  experiment:{label:'Experiment',cls:'s-blue'},
+};
+const PRIORITY = {
+  high:{label:'High',cls:'s-red'},
+  med:{label:'Medium',cls:'s-amber'},
+  low:{label:'Low',cls:'s-grey'},
+};
+/* ============================================================
+   Accountability grade  (A-F, cheat-resistant)
+   - Live: overdue items, stale / no-next-step tasks
+   - History (90d): late completions, and date PUSHES (weighted heaviest)
+   - Pulling a date earlier is free; pushing it out costs you even if you hit the new date
+   - Forgiving of one slip; strict on patterns
+   ============================================================ */
+function gradeFor(pid, projects, tasks, events){
+  const myP=projects.filter(p=>p.ownerId===pid);
+  const myT=tasks.filter(t=>(t.ownerIds||[]).includes(pid));
+  const items=[...myP,...myT];
+  if(items.length===0) return {grade:'\u2014',na:true,total:0,overdue:0,hygiene:0,late:0,pushCount:0,pushDays:0,activeItems:0,items:0};
+  const activeItems=items.filter(x=>x.status!=='done');
+  const activeTasks=myT.filter(t=>t.status!=='done');
+  const overdue=activeItems.filter(x=>isOverdue(x.dueDate,x.status)).length;
+  const hygiene=activeTasks.filter(t=>(t.nextSteps||[]).filter(n=>!n.done).length===0 || isStale(t.lastActivity,t.status)).length;
+  const cutoff=Date.now()-90*86400000;
+  const ids=new Set(items.map(x=>x.id));
+  const evs=(events||[]).filter(e=>ids.has(e.entityId) && new Date(e.ts).getTime()>=cutoff);
+  const pushes=evs.filter(e=>e.type==='date_change' && e.meta && e.meta.dir==='push');
+  const pushCount=pushes.length;
+  const pushDays=pushes.reduce((a,e)=>a+((e.meta&&e.meta.days)||0),0);
+  const late=evs.filter(e=>e.type==='completed' && e.meta && e.meta.onTime===false).length;
+  const honest=overdue*2 + hygiene*1 + late*1.5;
+  const forgiveness=1.5 + Math.min(2, 0.3*activeItems.length);
+  const integrity=pushCount*2 + Math.floor(pushDays/14)*1;
+  const total=Math.max(0, honest-forgiveness)+integrity;
+  const grade= total<1?'A': total<3?'B': total<5?'C': total<7.5?'D':'F';
+  return {grade,na:false,total:Math.round(total*10)/10,overdue,hygiene,late,pushCount,pushDays,activeItems:activeItems.length,items:items.length};
+}
+function gradeMeta(letter){
+  return ({A:{color:'#11936a'},B:{color:'#3a9d57'},C:{color:'#c2820f'},D:{color:'#d2761a'},F:{color:'#e9072b'}})[letter]||{color:'#7e96a6'};
+}
+function GradeBadge({letter,size}){
+  const m=gradeMeta(letter); const S=size||46;
+  return React.createElement('div',{style:{width:S,height:S,borderRadius:'50%',flex:'0 0 auto',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,fontSize:Math.round(S*0.44),color:'#fff',background:m.color,boxShadow:'inset 0 0 0 1px rgba(255,255,255,.3), 0 2px 6px rgba(0,22,40,.18)'}}, letter);
+}
+
+/* ---------------- seed data (MoeGo Outcome Five) ---------------- */
+const P = { // people
+  kev:'p_kev', dj:'p_dj', nav:'p_nav', nate:'p_nate', cvw:'p_cvw', steve:'p_steve', cloud:'p_cloud'
+};
+function ago(d){ return new Date(Date.now()-d*86400000).toISOString(); }
+
+const SEED = {
+  meta:{ version:1, seeded:true, appTitle:'MoeGo GTM OS' },
+  people:[
+    {id:P.kev,  name:'Kev', role:'GM of Revenue', dept:'Leadership'},
+    {id:P.dj,   name:'David Jacobs', role:'Sales & Onboarding (T4/T5)', dept:'Sales'},
+    {id:P.nav,  name:'Naveen Love', role:'Implementation', dept:'Implementation'},
+    {id:P.nate, name:'Nathan Gifford', role:'Customer Support', dept:'Support'},
+    {id:P.cvw,  name:'Christopher Van Wart', role:'Customer Success', dept:'Customer Success'},
+    {id:P.steve,name:'Steven Miller', role:'Enablement', dept:'Enablement'},
+    {id:P.cloud,name:'Cloud Wu', role:'Marketing', dept:'Marketing'},
+  ],
+  okrs:[
+    {id:'o1', num:1, theme:'Outbound Pilot', ownerId:P.dj, timeframe:'2026 H1', objective:'Build a viable outbound sales operating unit for the low-hanging fruit - proving we can acquire ICP customers at a CAC payback of 12 months or better, with a structured pilot validated by August 2026.',
+      successCriteria:['Acquire ICP via outbound at CAC payback <=12mo, validated by Aug 2026','Pilot running with 3 AEs, curated T1/T2/High-T3 list, tooling, full methodology','MoeGo Pay margin visible in SFDC and in outbound comp','Minimum sales input standards defined, published, tracked','ENT: in 100% of $10M+ GMV decisions, win 80%'], createdAt:ago(60)},
+    {id:'o2', num:2, theme:'Durable Outbound', ownerId:P.steve, timeframe:'2026-2028', objective:'Scale a durable outbound machine that stays efficient even when selling to ICP beyond the low-hanging fruit - maintaining 12-month or better CAC payback at 80%+ ICP penetration.',
+      successCriteria:['Magic number & CAC payback hold <=12mo at 40% ICP penetration','Call-to-meeting ratio holds until 50%+ ICP share','Universal methodology with <10% rep delta (AI-measured)','Comp, promotion path & perf mgmt cut negative attrition 10%/yr','Hiring profile + training: full productivity within 3 months'], createdAt:ago(60)},
+    {id:'o3', num:3, theme:'Fast Implementation', ownerId:P.nav, timeframe:'2026', objective:'Create a fast, high-quality implementation motion driving high activation + adoption for priority segments (ENT, MM, SMB) - while bringing Solo onboarding self-serve to preserve GTM resources.',
+      successCriteria:['Time-to-live: 14 days (EOY 26), 7 days (Q2 27); Solo <1 day','Go-lives tracked by location in Salesforce','Pre-live + 90-day post-live churn below 8% combined','Implementation CSAT hits target','Standardized CS/Support handoff cuts 90-day churn 3%','Sales accountable for customer prep before kickoff'], createdAt:ago(60)},
+    {id:'o4', num:4, theme:'Inbound Efficiency', ownerId:P.dj, timeframe:'2026', objective:'Build a 3x more capital-efficient full pre-sales motion - reducing inbound S&M CAC while increasing net SaaS ARPU from $1,800 to $3,000.',
+      successCriteria:['Inbound CAC $913 -> $450','SQO-to-Win 80%, SQL-to-SQO 80%','200+ inbound wins/month (MQLs 650+, better show rate, lead recovery)','Bespoke inbound methodology + training live','Reviews 10x, quality +0.75 pts','Brand awareness & favorability measured, lead industry'], createdAt:ago(60)},
+    {id:'o5', num:5, theme:'Demand & Brand', ownerId:P.cloud, timeframe:'2026', objective:'Make MoeGo the default selection for those actively looking - growing total MQLs from 441 to 3,000 per month and shifting mix toward T2/T3.',
+      successCriteria:['MQLs 441 -> 3,000/mo; T2/T3 = 30% of volume','Unaided brand awareness 40%, favorability 85% in ICP','Review volume 100x with ICP focus','1 T2+ case study/mo + referral program (5+ T2/T3 wins/mo)','ENT: established LinkedIn brand presence, +20pt awareness in T1'], createdAt:ago(60)},
+    {id:'o6', num:6, theme:'Retention & Expansion', ownerId:P.cvw, timeframe:'2026', objective:'Drive durable retention and expansion by making priority-segment customers more successful on MoeGo.',
+      successCriteria:['Segment CS/AM/Implementation playbooks defined & used','+20% adoption across core workflows, modules & MoeGo Pay','Health, risk & expansion visible in SFDC for 95%+ priority accounts','Annual churn <10%, competitive churn <2%','NRR crosses 120% as a repeatable motion','Support 97% CSAT, cost/ticket $12.50 -> $4.50, BPO deprecated'], createdAt:ago(60)},
+    {id:'o7', num:7, theme:'RevOps & Measurement', ownerId:P.kev, timeframe:'2026-2027', objective:'Segment-level unit economics are understood and Finance/RevOps operating rhythm is established - making every goal measurable and eliminating unforecasted misses.',
+      successCriteria:['Every goal measurable - ARR accurate, wins tracked, segment economics reportable from SFDC','Weekly WBR (GTM) + monthly financial review (Finance) operating','Minimum performance standards enforced at manager level'], createdAt:ago(60)},
+    {id:'o8', num:8, theme:'Enterprise Dominance', ownerId:P.kev, timeframe:'2026-2027', objective:'MoeGo becomes the standard software powering enterprise accounts - 100% decision penetration and 100% conversion on new ENT software decisions.',
+      successCriteria:['Lose zero ENT decisions for $10M+ GMV; present in 100%, win them','Zero surprise gaps at implementation start (signed SOW + documented reqs)','ENT NPS: <=1 detractor across the ENT book by EOY 2026','MoeGo Pay holds ~30bps margin across ENT','Existing ENT commitments resolved before new high-complexity logos'], createdAt:ago(60)},
+  ],
+  projects:[],
+  tasks:[],
+};
+
+function proj(o){ return Object.assign({okrIds:[],status:'in_progress',health:'on_track',conviction:'high',priority:'med',blocker:'',details:'',createdAt:ago(50),lastActivity:ago(3)}, o); }
+SEED.projects = [
+  // Objective 1 - Outbound pilot
+  proj({id:'pr1',name:'Hire 3 AEs to pilot outbound (June-Aug)',okrIds:['o1'],ownerId:P.dj,outcome:'$1.1M ARR by EOY 2026 -> $5.4M run rate (7 wins PRR at $7k ARPU)',conviction:'high',health:'at_risk',dueDate:'2026-08-15',priority:'high',lastActivity:ago(2),details:'Stand up the first dedicated outbound pod: three AEs hired and ramped against a curated T1/T2/High-T3 account list. This is the headcount foundation for the entire outbound pilot - everything else in Objective 1 assumes these seats are filled and productive.',docUrl:'https://docs.google.com/document/'}),
+  proj({id:'pr2',name:'Metric-based video case studies (min 1/mo)',okrIds:['o1','o5'],ownerId:P.cloud,outcome:'Required for 7 wins PRR; without it projection drops to 6.5',conviction:'high',health:'on_track',dueDate:'2026-07-31'}),
+  proj({id:'pr3',name:'TAM analysis - US ICP (T2 & high T3)',okrIds:['o1'],ownerId:P.kev,outcome:'Firm gate to the scaling decision',conviction:'gate',health:'at_risk',dueDate:'2026-06-20',status:'in_progress',lastActivity:ago(11)}),
+  proj({id:'pr4',name:'Purchase & implement outbound sales tooling',okrIds:['o1'],ownerId:P.dj,outcome:'Required for 7 wins PRR; without it forecast drops to 5',conviction:'high',health:'on_track',dueDate:'2026-07-10'}),
+  proj({id:'pr5',name:'SFDC payments-margin reporting for comp',okrIds:['o1'],ownerId:P.kev,outcome:'20bps margin uplift by folding MoeGo Pay margin into comp',conviction:'high',health:'on_track',dueDate:'2026-08-01'}),
+  proj({id:'pr6',name:'Set minimum sales-input standards (dials, touches)',okrIds:['o1'],ownerId:P.steve,outcome:'Required for 7 wins PRR; no minimums + remote = bad sales team',conviction:'high',health:'on_track',dueDate:'2026-07-05'}),
+  proj({id:'pr7',name:'Full sales methodology: cold call to close',okrIds:['o1','o2'],ownerId:P.steve,outcome:'Every step mapped, scripted, repeatable; protects rep productivity',conviction:'high',health:'at_risk',dueDate:'2026-07-20',lastActivity:ago(9)}),
+  // Objective 2 - Durable outbound
+  proj({id:'pr8',name:'Universal AI-measured selling methodology',okrIds:['o2'],ownerId:P.steve,outcome:'<10% talk-track/process delta between reps (Avoma & Salesloft)',conviction:'high',health:'on_track',dueDate:'2026-12-15',status:'not_started'}),
+  proj({id:'pr9',name:'Comp & in-role promotion structure',okrIds:['o2'],ownerId:P.kev,outcome:'Improves negative attrition rate 10% annually',conviction:'high',health:'on_track',dueDate:'2026-10-30',status:'not_started'}),
+  proj({id:'pr10',name:'Rebuild Data Migration API',okrIds:['o2','o3'],ownerId:P.kev,outcome:'Firm gate to be ready for scale in 2027',conviction:'gate',health:'off_track',dueDate:'2026-09-30',blocker:'Owned by EPD - need Jay to confirm capacity & timeline',status:'blocked',lastActivity:ago(4)}),
+  proj({id:'pr11',name:'Outbound hiring profile at scale',okrIds:['o2'],ownerId:P.steve,outcome:'Lowers annual attrition by 10%',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-11-15'}),
+  proj({id:'pr12',name:'Performance management framework',okrIds:['o2','o7'],ownerId:P.kev,outcome:'Required to maintain high PRR productivity at scale',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-10-15'}),
+  // Objective 3 - Implementation
+  proj({id:'pr13',name:'Rebuild data import API (config vs data import)',okrIds:['o3'],ownerId:P.nav,outcome:'Unlocks the AI auto-format project',conviction:'gate',health:'at_risk',dueDate:'2026-08-30',blocker:'',lastActivity:ago(5)}),
+  proj({id:'pr14',name:'AI tool to auto-format data into our tables',okrIds:['o3'],ownerId:P.nav,outcome:'Likely impacts pre-live churn by at least 5%',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-10-01'}),
+  proj({id:'pr15',name:'Track go-lives by location in Salesforce',okrIds:['o3','o7'],ownerId:P.kev,outcome:"Literally can't track our KRs without this",conviction:'gate',health:'at_risk',dueDate:'2026-07-15',lastActivity:ago(8)}),
+  proj({id:'pr16',name:'Standardize CS/Support handoff + auto-assign',okrIds:['o3','o6'],ownerId:P.cvw,outcome:'Reduce churn within 90 days by 3%',conviction:'high',health:'on_track',dueDate:'2026-09-01'}),
+  proj({id:'pr17',name:'"Best practice" standard config (vs build zero-to-one)',okrIds:['o3'],ownerId:P.nav,outcome:'Time-to-value -10 days; pre-live churn -3%',conviction:'high',health:'on_track',dueDate:'2026-08-20'}),
+  proj({id:'pr18',name:'MoeGo-branded customer prep phase before KOC',okrIds:['o3'],ownerId:P.dj,outcome:'Sales accountable; measured by show-up-with-data rate',conviction:'experiment',health:'on_track',status:'not_started',dueDate:'2026-09-10'}),
+  proj({id:'pr19',name:'Rework sales comp to incentivize healthy go-lives',okrIds:['o3'],ownerId:P.kev,outcome:'Healthier go-lives, lower pre-live churn',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-09-30'}),
+  // Objective 4 - Inbound efficiency
+  proj({id:'pr20',name:'Build Salesforce to automate SQOs',okrIds:['o4','o7'],ownerId:P.kev,outcome:"Can't measure the KR without this",conviction:'gate',health:'at_risk',dueDate:'2026-07-25'}),
+  proj({id:'pr21',name:'Sharpen Chili Piper booking to lift show rate',okrIds:['o4'],ownerId:P.dj,outcome:'+10 points SQL:SQO',conviction:'high',health:'on_track',dueDate:'2026-07-12'}),
+  proj({id:'pr22',name:'Rehire sales team with a favorable cost structure',okrIds:['o4'],ownerId:P.dj,outcome:'Reduce sales CAC by 43%',conviction:'gate',health:'at_risk',dueDate:'2026-09-10',dueDateOriginal:'2026-08-15',lastActivity:ago(6)}),
+  proj({id:'pr23',name:'Salesloft/HubSpot + SendSpark to recover abandoned leads',okrIds:['o4'],ownerId:P.cloud,outcome:'Adds 100 MQLs/month',conviction:'high',health:'on_track',dueDate:'2026-08-10'}),
+  proj({id:'pr24',name:'Bespoke inbound methodology + training',okrIds:['o4','o2'],ownerId:P.steve,outcome:'+15% conversion, -3 days time-to-close',conviction:'high',health:'on_track',dueDate:'2026-09-15'}),
+  // Objective 5 - demand & brand
+  proj({id:'pr25',name:'Review influencing - 100x reviews (ICP focus)',okrIds:['o5','o6'],ownerId:P.cloud,outcome:'Close rate up across channels; traffic:MQL up',conviction:'high',health:'on_track',dueDate:'2026-12-01'}),
+  proj({id:'pr26',name:'Customer referral motion via ICP evangelists',okrIds:['o5'],ownerId:P.cloud,outcome:'5 additional T2/T3 wins per month',conviction:'experiment',health:'on_track',status:'not_started',dueDate:'2026-09-30'}),
+  proj({id:'pr27',name:'Monthly T2+ ROI case study program',okrIds:['o5'],ownerId:P.cloud,outcome:'10 additional T3 & T2 MQLs',conviction:'high',health:'on_track',dueDate:'2026-07-31'}),
+  proj({id:'pr28',name:'Re-engage MQLs via cadence drip (bespoke T2/T3)',okrIds:['o5','o4'],ownerId:P.cloud,outcome:'15 additional T3+ MQLs; 45 additional MQLs total',conviction:'high',health:'at_risk',dueDate:'2026-06-18',dueDateOriginal:'2026-06-01',lastActivity:ago(14)}),
+  proj({id:'pr29',name:'ENT LinkedIn presence (1 case study/press release per mo)',okrIds:['o5','o8'],ownerId:P.cloud,outcome:'+20pt unaided brand awareness within T1',conviction:'high',health:'on_track',dueDate:'2026-10-01'}),
+  proj({id:'pr30',name:'Rebuild social strategy + MoeGo Charity',okrIds:['o5'],ownerId:P.cloud,outcome:'Favorability +10pts; unaided awareness +5pts',conviction:'experiment',health:'on_track',status:'not_started',dueDate:'2026-11-01'}),
+  // Objective 6 - retention & expansion
+  proj({id:'pr31',name:'SFDC account structure (location-based audits + health)',okrIds:['o6','o7'],ownerId:P.kev,outcome:'Better churn metrics; foundation for health scoring',conviction:'gate',health:'at_risk',dueDate:'2026-08-15'}),
+  proj({id:'pr32',name:'Bring MoeGo adoption metrics into SFDC',okrIds:['o6'],ownerId:P.kev,outcome:'+20% adoption rates',conviction:'gate',health:'off_track',dueDate:'2026-09-20',blocker:'Depends on data warehouse overhaul (EPD)',status:'blocked',lastActivity:ago(7)}),
+  proj({id:'pr33',name:'Track account risks & audit weekly',okrIds:['o6'],ownerId:P.cvw,outcome:'3% churn reduction',conviction:'high',health:'on_track',dueDate:'2026-07-30'}),
+  proj({id:'pr34',name:'Scheduled Zoom support for Ultimate users',okrIds:['o6'],ownerId:P.cvw,outcome:'~$200k savings on CSM costs',conviction:'high',health:'on_track',dueDate:'2026-07-08',lastActivity:ago(1)}),
+  proj({id:'pr35',name:'AI resolves 60% of tickets (no human, no wait)',okrIds:['o6'],ownerId:P.nate,outcome:'Cost per ticket $12.50 -> $5.50',conviction:'high',health:'at_risk',dueDate:'2026-10-31'}),
+  proj({id:'pr36',name:'Deprecate BPO; MoeGo-employed premium support',okrIds:['o6'],ownerId:P.nate,outcome:'CSAT increases to 97%',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-11-30'}),
+  // Objective 7 - revops rhythm
+  proj({id:'pr37',name:'Build SFDC from the ground up',okrIds:['o7'],ownerId:P.kev,outcome:'Nothing happens without this; operational excellence is impossible otherwise',conviction:'gate',health:'at_risk',dueDate:'2026-09-30'}),
+  proj({id:'pr38',name:'Stand up a weekly WBR within GTM',okrIds:['o7'],ownerId:P.kev,outcome:'Misses caught early, not retroactively',conviction:'high',health:'on_track',dueDate:'2026-07-01',lastActivity:ago(1)}),
+  proj({id:'pr39',name:'Monthly business-financials review (Finance)',okrIds:['o7'],ownerId:P.kev,outcome:'Monthly financial operating cadence established',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-08-15'}),
+  proj({id:'pr40',name:'Layer performance management onto managers',okrIds:['o7','o2'],ownerId:P.kev,outcome:'Accountability becomes a data-driven reflex',conviction:'high',health:'on_track',status:'not_started',dueDate:'2026-10-01'}),
+  // Objective 8 - enterprise
+  proj({id:'pr41',name:'Enable on the ENT assembly line',okrIds:['o8'],ownerId:P.nav,outcome:'100% consistency on the enterprise assembly line',conviction:'high',health:'at_risk',dueDate:'2026-08-31'}),
+  proj({id:'pr42',name:'Re-work CSM to be a value-add, not a firefighter',okrIds:['o8','o6'],ownerId:P.cvw,outcome:'CSM becomes a distinction; reduces churn intent',conviction:'high',health:'on_track',dueDate:'2026-09-15'}),
+  proj({id:'pr43',name:'Implement MEDDPICC',okrIds:['o8'],ownerId:P.dj,outcome:'Win rate to 100%; deep discovery, no missed needs',conviction:'high',health:'on_track',dueDate:'2026-08-20'}),
+  proj({id:'pr44',name:'Define & enforce ENT discovery + SOW requirements',okrIds:['o8','o3'],ownerId:P.dj,outcome:'100% of ENT deals enter implementation with signed SOW + gap analysis',conviction:'high',health:'on_track',dueDate:'2026-09-01'}),
+  proj({id:'pr45',name:'ENT customer health & reference program',okrIds:['o8'],ownerId:P.cvw,outcome:'3+ referenceable ENT customers by EOY 2026; NPS to zero detractors',conviction:'high',health:'on_track',dueDate:'2026-12-01'}),
+];
+function task(o){ return Object.assign({projectIds:[],ownerIds:[],status:'in_progress',priority:'med',blocker:'',nextSteps:[],createdAt:ago(40),lastActivity:ago(3)}, o); }
+function ns(text,opts){ return Object.assign({id:uid('ns'),text,dueDate:'',createdAt:ago(3),done:false,doneAt:null,completionNotes:''}, opts||{}); }
+SEED.tasks = [
+  // pr1 - Hire 3 AEs
+  task({id:'t1',projectIds:['pr1'],title:'Write outbound AE job description & comp band',ownerIds:[P.dj,P.steve],status:'done',priority:'high',dueDate:'2026-06-05',lastActivity:ago(12),
+    nextSteps:[ns('JD approved by Kev; posted to LinkedIn + Wellfound',{done:true,doneAt:ago(12),createdAt:ago(20),completionNotes:'Live on 3 boards'})]}),
+  task({id:'t2',projectIds:['pr1'],title:'Run first-round screens (target 15 candidates)',ownerIds:[P.dj],status:'in_progress',priority:'high',dueDate:'2026-07-01',lastActivity:ago(2),
+    nextSteps:[ns('Phone screens booked for 6 candidates this week',{dueDate:'2026-06-30',createdAt:ago(2)}), ns('Build the take-home cold-call exercise',{dueDate:'2026-07-03',createdAt:ago(2)})]}),
+  task({id:'t3',projectIds:['pr1'],title:'Finalize ramp/onboarding plan for new AEs',ownerIds:[P.steve],status:'in_progress',priority:'med',dueDate:'2026-06-12',lastActivity:ago(10),
+    nextSteps:[]}), // overdue + no next step -> shows in audit
+  // pr3 - TAM analysis (stale, gate)
+  task({id:'t4',projectIds:['pr3'],title:'Pull T2/High-T3 account universe from data sources',ownerIds:[P.kev],status:'in_progress',priority:'high',dueDate:'2026-06-15',lastActivity:ago(11),
+    nextSteps:[ns('Waiting on enrichment vendor trial access',{dueDate:'2026-06-14',createdAt:ago(11)})]}), // overdue next step + stale
+  // pr10 - data migration API (blocked)
+  task({id:'t5',projectIds:['pr10'],title:'Get EPD capacity commitment from Jay',ownerIds:[P.kev],status:'blocked',priority:'high',dueDate:'2026-06-22',blocker:'Jay has not confirmed a sprint slot; escalate to Ethan if not resolved this week',lastActivity:ago(4),
+    nextSteps:[ns('Drafted the ask; sending to Jay + Ethan',{dueDate:'2026-06-27',createdAt:ago(4)})]}),
+  // pr15 - track go-lives in SFDC
+  task({id:'t6',projectIds:['pr15'],title:'Define the "go-live" object & required fields in SFDC',ownerIds:[P.kev],status:'in_progress',priority:'high',dueDate:'2026-07-10',lastActivity:ago(8),
+    nextSteps:[ns('Spec the schema with RevOps; review with Naveen',{dueDate:'2026-07-02',createdAt:ago(8)})]}),
+  // pr34 - scheduled Zoom support
+  task({id:'t7',projectIds:['pr34'],title:'Build the Ultimate-tier Zoom support calendar + SLAs',ownerIds:[P.cvw],status:'in_progress',priority:'med',dueDate:'2026-07-05',lastActivity:ago(1),
+    nextSteps:[ns('Drafted SLA tiers; circulating to Support for input',{dueDate:'2026-06-30',createdAt:ago(1)})]}),
+  task({id:'t8',projectIds:['pr34'],title:'Comms to existing Ultimate customers re: model change',ownerIds:[P.cvw,P.cloud],status:'not_started',priority:'med',dueDate:'2026-07-08',lastActivity:ago(1),
+    nextSteps:[ns('Draft the customer email; Kev to review tone',{dueDate:'2026-07-01',createdAt:ago(1)})]}),
+  // pr38 - WBR
+  task({id:'t9',projectIds:['pr38'],title:'Define the WBR metric set (51 metrics, 6 functions)',ownerIds:[P.kev],status:'in_progress',priority:'high',dueDate:'2026-06-28',lastActivity:ago(1),
+    nextSteps:[ns('Metric list drafted; validating data availability per metric',{dueDate:'2026-06-27',createdAt:ago(1)}), ns('Decide which metrics are red/yellow/green thresholds',{dueDate:'2026-06-29',createdAt:ago(1)})]}),
+  task({id:'t10',projectIds:['pr38'],title:'Build the WBR review-meeting agenda & cadence',ownerIds:[P.kev],status:'not_started',priority:'med',dueDate:'2026-07-01',lastActivity:ago(1),nextSteps:[]}),
+  // pr22 - rehire sales (stale)
+  task({id:'t11',projectIds:['pr22'],title:'Model the right-sized inbound team cost structure',ownerIds:[P.dj,P.kev],status:'in_progress',priority:'high',dueDate:'2026-07-15',lastActivity:ago(6),
+    nextSteps:[ns('Compare current $1M cost vs target CAC $450 staffing model',{dueDate:'2026-07-05',createdAt:ago(6)})]}),
+  // pr43 - MEDDPICC
+  task({id:'t12',projectIds:['pr43'],title:'Adapt MEDDPICC fields into Salesforce opportunity',ownerIds:[P.dj],status:'in_progress',priority:'med',dueDate:'2026-08-01',lastActivity:ago(3),
+    nextSteps:[ns('Map each MEDDPICC element to an SFDC field',{dueDate:'2026-07-20',createdAt:ago(3)})]}),
+];
+// Demo audit events (date moves + completions). These accrue as the team uses the tool.
+SEED.events = [
+  {id:uid('ev'),ts:ago(20),actorId:P.dj,type:'date_change',entityType:'project',entityId:'pr22',meta:{from:'2026-08-15',to:'2026-08-31',dir:'push',days:16}},
+  {id:uid('ev'),ts:ago(7),actorId:P.dj,type:'date_change',entityType:'project',entityId:'pr22',meta:{from:'2026-08-31',to:'2026-09-10',dir:'push',days:10}},
+  {id:uid('ev'),ts:ago(28),actorId:P.cloud,type:'date_change',entityType:'project',entityId:'pr28',meta:{from:'2026-06-01',to:'2026-06-18',dir:'push',days:17}},
+  {id:uid('ev'),ts:ago(14),actorId:P.kev,type:'date_change',entityType:'project',entityId:'pr3',meta:{from:'2026-06-25',to:'2026-06-20',dir:'pull',days:5}},
+  {id:uid('ev'),ts:ago(11),actorId:P.kev,type:'completed',entityType:'task',entityId:'t1',meta:{onTime:true,dueDate:'2026-06-05'}},
+];
+/* ============================================================
+   Data + sync layer  (Firebase Realtime DB  ->  localStorage fallback)
+   ============================================================ */
+const LS_KEY = 'moego_gtm_os_v1';
+const LS_ME  = 'moego_gtm_os_me';
+const LS_CFG = 'moego_gtm_os_cfg';      // browser-pasted firebase config (test mode)
+const DB_ROOT = 'moego_gtm';
+const COLLS = ['people','okrs','projects','tasks'];
+
+function loadLocal(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return null;
+}
+function saveLocal(state){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+}
+function getPastedConfig(){
+  try{ const r = localStorage.getItem(LS_CFG); if(r){ return JSON.parse(r); } }catch(e){}
+  return null;
+}
+function effectiveConfig(){
+  if(FIREBASE_CONFIG && FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.databaseURL) return FIREBASE_CONFIG;
+  const pasted = getPastedConfig();
+  if(pasted && pasted.apiKey && pasted.databaseURL) return pasted;
+  return null;
+}
+const firebaseAvailable = (typeof firebase !== 'undefined');
+
+function arrToMap(arr){ const m={}; (arr||[]).forEach(x=>{ if(x&&x.id) m[x.id]=x; }); return m; }
+function mapToArr(m){ return m ? Object.keys(m).map(k=>m[k]) : []; }
+function blankState(){ return {meta:{appTitle:'MoeGo GTM OS'},people:[],okrs:[],projects:[],tasks:[],events:[]}; }
+function freshSeed(){ return JSON.parse(JSON.stringify(SEED)); }
+
+const Store = createContext(null);
+const useStore = () => useContext(Store);
+
+function StoreProvider({children}){
+  const [mode, setMode] = useState('boot');      // boot | local | auth | denied | cloud
+  const [user, setUser] = useState(null);
+  const [state, setState] = useState(blankState);
+  const [me, setMe] = useState(()=>{ try{return localStorage.getItem(LS_ME)||'';}catch(e){return '';} });
+  const [sync, setSync] = useState('local');     // local | live | connecting | error
+  const [toast, setToast] = useState(null);
+  const dbRef = useRef(null);
+  const cfg = useMemo(()=>effectiveConfig(),[]);
+
+  const flash = useCallback((m)=>{ setToast(m); setTimeout(()=>setToast(null), 2600); },[]);
+
+  // ---- init ----
+  useEffect(()=>{
+    let cancelled=false;
+    if(!cfg || !firebaseAvailable){
+      const local = loadLocal() || freshSeed();
+      setState(local); setMode('local'); setSync('local');
+      return;
+    }
+    try{
+      if(!firebase.apps.length) firebase.initializeApp(cfg);
+      const auth = firebase.auth();
+      setMode('auth'); setSync('connecting');
+      const unsub = auth.onAuthStateChanged(u=>{
+        if(cancelled) return;
+        if(!u){ setUser(null); setMode('auth'); return; }
+        const email=(u.email||'').toLowerCase();
+        if(ALLOWED_EMAILS.length && !ALLOWED_EMAILS.includes(email)){ setUser(u); setMode('denied'); return; }
+        setUser(u);
+        const ref = firebase.database().ref(DB_ROOT);
+        dbRef.current = ref;
+        ref.once('value').then(snap=>{
+          if(!snap.exists()){
+            const seed = freshSeed();
+            ref.set({ meta:seed.meta, people:arrToMap(seed.people), okrs:arrToMap(seed.okrs), projects:arrToMap(seed.projects), tasks:arrToMap(seed.tasks), events:arrToMap(seed.events||[]) });
+          }
+        });
+        ref.on('value', snap=>{
+          const v = snap.val()||{};
+          setState({ meta:v.meta||{appTitle:'MoeGo GTM OS'}, people:mapToArr(v.people), okrs:mapToArr(v.okrs), projects:mapToArr(v.projects), tasks:mapToArr(v.tasks), events:mapToArr(v.events) });
+          setMode('cloud'); setSync('live');
+        }, err=>{ console.error(err); setSync('error'); });
+      });
+      return ()=>{ cancelled=true; unsub&&unsub(); if(dbRef.current) dbRef.current.off(); };
+    }catch(e){
+      console.error('Firebase init failed, using local mode', e);
+      const local = loadLocal() || freshSeed();
+      setState(local); setMode('local'); setSync('local');
+    }
+  },[cfg]);
+
+  useEffect(()=>{ try{ localStorage.setItem(LS_ME, me);}catch(e){} },[me]);
+
+  const signIn = useCallback(()=>{
+    try{
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider).catch(e=>flash('Sign-in failed: '+e.message));
+    }catch(e){ flash('Auth not ready'); }
+  },[flash]);
+  const signOut = useCallback(()=>{ try{ firebase.auth().signOut(); }catch(e){} },[]);
+
+  // ---- writes ----
+  const persist = useCallback((next)=>{ if(mode!=='cloud') saveLocal(next); },[mode]);
+
+  const writeEntity = useCallback((coll, obj)=>{
+    if(mode==='cloud' && dbRef.current){ dbRef.current.child(coll).child(obj.id).set(obj); }
+    else setState(s=>{ const arr=s[coll].some(x=>x.id===obj.id)? s[coll].map(x=>x.id===obj.id?obj:x) : [...s[coll],obj]; const next={...s,[coll]:arr}; saveLocal(next); return next; });
+  },[mode]);
+
+  const writeMany = useCallback((entries)=>{ // entries: [{coll,obj}]
+    if(mode==='cloud' && dbRef.current){ entries.forEach(({coll,obj})=> dbRef.current.child(coll).child(obj.id).set(obj)); }
+    else setState(s=>{ let next={...s}; entries.forEach(({coll,obj})=>{ const arr=next[coll].some(x=>x.id===obj.id)? next[coll].map(x=>x.id===obj.id?obj:x):[...next[coll],obj]; next={...next,[coll]:arr}; }); saveLocal(next); return next; });
+  },[mode]);
+
+  const deleteEntity = useCallback((coll, id, alsoWrite=[])=>{
+    if(mode==='cloud' && dbRef.current){ alsoWrite.forEach(({coll:c,obj})=>dbRef.current.child(c).child(obj.id).set(obj)); dbRef.current.child(coll).child(id).remove(); }
+    else setState(s=>{ let next={...s}; alsoWrite.forEach(({coll:c,obj})=>{ next={...next,[c]:next[c].map(x=>x.id===obj.id?obj:x)}; }); next={...next,[coll]:next[coll].filter(x=>x.id!==id)}; saveLocal(next); return next; });
+  },[mode]);
+
+  const importData = useCallback((data)=>{
+    const clean={ meta:data.meta||{appTitle:'MoeGo GTM OS'}, people:data.people||[], okrs:data.okrs||[], projects:data.projects||[], tasks:data.tasks||[], events:data.events||[] };
+    if(mode==='cloud' && dbRef.current){ dbRef.current.set({ meta:clean.meta, people:arrToMap(clean.people), okrs:arrToMap(clean.okrs), projects:arrToMap(clean.projects), tasks:arrToMap(clean.tasks), events:arrToMap(clean.events) }); }
+    else { setState(clean); saveLocal(clean); }
+    flash('Data imported');
+  },[mode,flash]);
+
+  const resetSeed = useCallback(()=>{ importData(freshSeed()); },[importData]);
+
+  const value = { mode,user,state,me,setMe,sync,toast,flash, signIn,signOut, writeEntity,writeMany,deleteEntity,importData,resetSeed, cfg };
+  return React.createElement(Store.Provider,{value}, children);
+}
+/* ============================================================
+   Derived data + entity actions
+   ============================================================ */
+function useGtm(){
+  const s = useStore();
+  const { state } = s;
+  const people = state.people, okrs = state.okrs, projects = state.projects, tasks = state.tasks;
+  const events = state.events || [];
+  const maps = useMemo(()=>({
+    person: arrToMap(people), okr: arrToMap(okrs), project: arrToMap(projects), task: arrToMap(tasks)
+  }),[people,okrs,projects,tasks]);
+
+  const tasksForProject = useCallback((pid)=> tasks.filter(t=>(t.projectIds||[]).includes(pid)),[tasks]);
+  const projectsForOkr = useCallback((oid)=> projects.filter(p=>(p.okrIds||[]).includes(oid)),[projects]);
+  const openNextSteps = (t)=> (t.nextSteps||[]).filter(n=>!n.done);
+
+  // OKR confidence rolled up from project health
+  const okrConfidence = useCallback((oid)=>{
+    const ps = projectsForOkr(oid).filter(p=>p.status!=='done');
+    if(!ps.length) return {label:'No active work',cls:'s-grey',health:'on_track'};
+    if(ps.some(p=>p.health==='off_track'||p.status==='blocked')) return {label:'At risk',cls:'s-red',health:'off_track'};
+    if(ps.some(p=>p.health==='at_risk')) return {label:'Watch',cls:'s-amber',health:'at_risk'};
+    return {label:'On track',cls:'s-green',health:'on_track'};
+  },[projectsForOkr]);
+
+  // actions
+  const { writeEntity, writeMany, deleteEntity } = s;
+  const me = s.me;
+  const logEvent=(type,entityType,entityId,meta)=> writeEntity('events',{id:uid('ev'),ts:nowISO(),actorId:me||'',type,entityType,entityId,meta:meta||{}});
+  const dayDiff=(a,b)=>{ const pa=new Date(a.length<=10?a+'T00:00:00':a), pb=new Date(b.length<=10?b+'T00:00:00':b); return Math.round((pb-pa)/86400000); };
+  const A = {
+    savePerson:(p)=> writeEntity('people', p.id?p:{...p,id:uid('p')}),
+    deletePerson:(id)=>{
+      const projFix = projects.filter(p=>p.ownerId===id).map(p=>({...p, ownerId:''}));
+      const taskFix = tasks.filter(t=>(t.ownerIds||[]).includes(id)).map(t=>({...t, ownerIds:t.ownerIds.filter(x=>x!==id)}));
+      deleteEntity('people', id, [...projFix.map(o=>({coll:'projects',obj:o})), ...taskFix.map(o=>({coll:'tasks',obj:o}))]);
+    },
+    saveOkr:(o)=> writeEntity('okrs', o.id?{...o}:{...o,id:uid('o'),createdAt:nowISO()}),
+    deleteOkr:(id)=>{
+      const projFix = projects.filter(p=>(p.okrIds||[]).includes(id)).map(p=>({...p, okrIds:p.okrIds.filter(x=>x!==id)}));
+      deleteEntity('okrs', id, projFix.map(o=>({coll:'projects',obj:o})));
+    },
+    saveProject:(p)=>{
+      const prev = p.id ? maps.project[p.id] : null;
+      const out = {...p, id:p.id||uid('pr'), createdAt:p.createdAt||(prev&&prev.createdAt)||nowISO(), lastActivity:nowISO()};
+      if(out.dueDate && !out.dueDateOriginal) out.dueDateOriginal = (prev&&prev.dueDateOriginal) || out.dueDate;
+      if(prev){
+        if((prev.dueDate||'')!==(out.dueDate||'') && prev.dueDate && out.dueDate){
+          const d=dayDiff(prev.dueDate,out.dueDate);
+          logEvent('date_change','project',out.id,{name:out.name,from:prev.dueDate,to:out.dueDate,dir:d>0?'push':'pull',days:Math.abs(d)});
+        }
+        if(prev.status!=='done' && out.status==='done'){
+          const onTime = !out.dueDate || dayDiff(todayStr(),out.dueDate)>=0;
+          logEvent('completed','project',out.id,{name:out.name,onTime,dueDate:out.dueDate||'',original:out.dueDateOriginal||''});
+        }
+      }
+      writeEntity('projects', out);
+    },
+    deleteProject:(id)=>{
+      const taskFix = tasks.filter(t=>(t.projectIds||[]).includes(id)).map(t=>({...t, projectIds:t.projectIds.filter(x=>x!==id)}));
+      deleteEntity('projects', id, taskFix.map(o=>({coll:'tasks',obj:o})));
+    },
+    saveTask:(t)=>{
+      const prev = t.id ? maps.task[t.id] : null;
+      const out = {...t, id:t.id||uid('t'), createdAt:t.createdAt||(prev&&prev.createdAt)||nowISO(), lastActivity:nowISO()};
+      if(out.dueDate && !out.dueDateOriginal) out.dueDateOriginal = (prev&&prev.dueDateOriginal) || out.dueDate;
+      if(prev){
+        if((prev.dueDate||'')!==(out.dueDate||'') && prev.dueDate && out.dueDate){
+          const d=dayDiff(prev.dueDate,out.dueDate);
+          logEvent('date_change','task',out.id,{name:out.title,from:prev.dueDate,to:out.dueDate,dir:d>0?'push':'pull',days:Math.abs(d)});
+        }
+        if(prev.status!=='done' && out.status==='done'){
+          const onTime = !out.dueDate || dayDiff(todayStr(),out.dueDate)>=0;
+          logEvent('completed','task',out.id,{name:out.title,onTime,dueDate:out.dueDate||'',original:out.dueDateOriginal||''});
+        }
+      }
+      writeEntity('tasks', out);
+    },
+    deleteTask:(id)=> deleteEntity('tasks', id),
+    // next steps
+    addNextStep:(task, text, dueDate)=>{
+      const step={id:uid('ns'),text,dueDate:dueDate||'',createdAt:nowISO(),done:false,doneAt:null,completionNotes:''};
+      writeEntity('tasks', {...task, nextSteps:[...(task.nextSteps||[]), step], lastActivity:nowISO()});
+    },
+    toggleNextStep:(task, nsId, completionNotes)=>{
+      const step=(task.nextSteps||[]).find(n=>n.id===nsId);
+      const goingDone = step && !step.done;
+      const nextSteps=(task.nextSteps||[]).map(n=> n.id===nsId ? {...n, done:!n.done, doneAt:!n.done?nowISO():null, completionNotes:!n.done?(completionNotes||n.completionNotes||''):n.completionNotes} : n);
+      writeEntity('tasks', {...task, nextSteps, lastActivity:nowISO()});
+      if(goingDone){ const onTime=!step.dueDate || dayDiff(todayStr(),step.dueDate)>=0; logEvent('next_step_done','task',task.id,{name:task.title,onTime,text:step.text}); }
+    },
+    editNextStep:(task, nsId, patch)=>{
+      const nextSteps=(task.nextSteps||[]).map(n=> n.id===nsId ? {...n, ...patch} : n);
+      writeEntity('tasks', {...task, nextSteps, lastActivity:nowISO()});
+    },
+    deleteNextStep:(task, nsId)=>{
+      writeEntity('tasks', {...task, nextSteps:(task.nextSteps||[]).filter(n=>n.id!==nsId), lastActivity:nowISO()});
+    },
+  };
+
+  return { ...s, people, okrs, projects, tasks, events, maps, tasksForProject, projectsForOkr, openNextSteps, okrConfidence, A };
+}
+
+/* ============================================================
+   UI primitives
+   ============================================================ */
+function Avatar({person, size}){
+  const cls = 'av '+(size||'');
+  if(!person) return React.createElement('span',{className:cls,style:{background:'#b6c6d6'}},'?');
+  if(person.photoUrl) return React.createElement('span',{className:cls,style:{overflow:'hidden',background:'#dbe7f0'},title:person.name}, React.createElement('img',{src:person.photoUrl,alt:person.name}));
+  return React.createElement('span',{className:cls,style:{background:colorFor(person.id)},title:person.name}, initials(person.name));
+}
+function AvatarStack({ids, map, size}){
+  const ppl=(ids||[]).map(i=>map[i]).filter(Boolean);
+  if(!ppl.length) return React.createElement('span',{className:'muted tiny'},'Unassigned');
+  return React.createElement('span',{className:'av-stack'}, ppl.slice(0,4).map(p=>React.createElement(Avatar,{key:p.id,person:p,size:size||'sm'})), ppl.length>4 && React.createElement('span',{className:'av sm',style:{background:'#9fb4c8'}}, '+'+(ppl.length-4)));
+}
+function Pill({kind, value}){
+  const map = kind==='status'?STATUS : kind==='health'?HEALTH : kind==='conviction'?CONVICTION : PRIORITY;
+  const def = map[value]; if(!def) return null;
+  if(kind==='health'){
+    return React.createElement('span',{className:'pill-s '+def.cls}, React.createElement('span',{className:'hdot',style:{background:def.color}}), def.label);
+  }
+  return React.createElement('span',{className:'pill-s '+def.cls}, def.label);
+}
+function HealthDot({value}){ const d=HEALTH[value]||HEALTH.on_track; return React.createElement('span',{className:'hdot',style:{background:d.color},title:d.label}); }
+function DueTag({date,status}){
+  if(!date) return React.createElement('span',{className:'muted tiny'},'No date');
+  const n=daysFromNow(date); const over=isOverdue(date,status); const soon=!over && n!==null && n<=3 && status!=='done';
+  const cls='tag-due '+(over?'over':soon?'soon':'');
+  let suffix=''; if(status!=='done'){ if(over) suffix=' ('+Math.abs(n)+'d late)'; else if(n===0) suffix=' (today)'; else if(soon) suffix=' ('+n+'d)'; }
+  return React.createElement('span',{className:cls}, fmtDateShort(date)+suffix);
+}
+function Modal({title, onClose, children, footer, wide}){
+  return React.createElement('div',{className:'scrim',onMouseDown:(e)=>{if(e.target===e.currentTarget)onClose();}},
+    React.createElement('div',{className:'modal',style:wide?{width:'min(720px,94vw)'}:null},
+      React.createElement('div',{className:'mh'}, React.createElement('h3',null,title), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
+      React.createElement('div',{className:'mb'}, children),
+      footer && React.createElement('div',{className:'mf'}, footer)
+    ));
+}
+function Field({label, hint, children}){
+  return React.createElement('div',{className:'field'},
+    label && React.createElement('label',null, label, hint&&React.createElement('span',{className:'hint'},hint)),
+    children);
+}
+function Confirm({text, onConfirm, onClose, danger}){
+  return React.createElement(Modal,{title:'Please confirm', onClose,
+    footer:[React.createElement('button',{key:'c',className:'btn',onClick:onClose},'Cancel'),
+      React.createElement('button',{key:'o',className:'btn '+(danger?'danger':'primary'),onClick:()=>{onConfirm();onClose();}}, danger?'Delete':'Confirm')]},
+    React.createElement('div',null, text));
+}
+/* ============================================================
+   Selectors + forms
+   ============================================================ */
+function EnumSelect({value,onChange,options}){
+  return React.createElement('select',{className:'inp',value:value,onChange:e=>onChange(e.target.value)},
+    Object.keys(options).map(k=>React.createElement('option',{key:k,value:k},options[k].label)));
+}
+function PersonPick({value,onChange,people,allowNone}){
+  return React.createElement('select',{className:'inp',value:value||'',onChange:e=>onChange(e.target.value)},
+    allowNone && React.createElement('option',{value:''},'Unassigned'),
+    people.map(p=>React.createElement('option',{key:p.id,value:p.id}, p.name+' \u2014 '+p.role)));
+}
+function PeopleCheck({selected,onChange,people}){
+  const sel=selected||[];
+  return React.createElement('div',{className:'chk-grid'}, people.map(p=>{
+    const on=sel.includes(p.id);
+    return React.createElement('label',{key:p.id,className:'chk'+(on?' on':'')},
+      React.createElement('input',{type:'checkbox',checked:on,onChange:()=> onChange(on? sel.filter(x=>x!==p.id):[...sel,p.id])}),
+      React.createElement(Avatar,{person:p,size:'sm'}), p.name.split(' ')[0]);
+  }));
+}
+function OkrCheck({selected,onChange,okrs}){
+  const sel=selected||[];
+  return React.createElement('div',{className:'chk-grid'}, okrs.map(o=>{
+    const on=sel.includes(o.id);
+    return React.createElement('label',{key:o.id,className:'chk'+(on?' on':''),title:o.objective},
+      React.createElement('input',{type:'checkbox',checked:on,onChange:()=> onChange(on? sel.filter(x=>x!==o.id):[...sel,o.id])}),
+      React.createElement('b',{style:{color:'var(--navy)',marginRight:5}},'O'+o.num+' \u00b7'), o.theme);
+  }));
+}
+
+function ProjectForm({initial, onSave, onClose, people, okrs, lockOkr}){
+  const [f,setF]=useState(()=>Object.assign({name:'',okrIds:lockOkr?[lockOkr]:[],ownerId:'',outcome:'',details:'',docUrl:'',conviction:'high',health:'on_track',status:'in_progress',priority:'med',dueDate:'',blocker:''}, initial||{}));
+  const up=(k,v)=>setF(s=>({...s,[k]:v}));
+  const valid=f.name.trim().length>0;
+  return React.createElement(Modal,{title:initial&&initial.id?'Edit project':'New project',onClose,wide:true,
+    footer:[React.createElement('button',{key:'c',className:'btn',onClick:onClose},'Cancel'),
+      React.createElement('button',{key:'s',className:'btn primary',disabled:!valid,onClick:()=>{onSave(f);onClose();}}, initial&&initial.id?'Save changes':'Create project')]},
+    React.createElement(Field,{label:'Project name'}, React.createElement('input',{className:'inp',value:f.name,placeholder:'What is the project?',onChange:e=>up('name',e.target.value),autoFocus:true})),
+    React.createElement(Field,{label:'Expected outcome',hint:'the result this produces'}, React.createElement('textarea',{className:'inp',value:f.outcome,placeholder:'When this is done, what changes?',onChange:e=>up('outcome',e.target.value)})),
+    React.createElement('div',{className:'f-row'},
+      React.createElement(Field,{label:'Accountability owner'}, React.createElement(PersonPick,{value:f.ownerId,onChange:v=>up('ownerId',v),people,allowNone:true})),
+      React.createElement(Field,{label:'Due date'}, React.createElement('input',{type:'date',className:'inp',value:f.dueDate,onChange:e=>up('dueDate',e.target.value)}))),
+    React.createElement('div',{className:'f-row'},
+      React.createElement(Field,{label:'Status'}, React.createElement(EnumSelect,{value:f.status,onChange:v=>up('status',v),options:STATUS})),
+      React.createElement(Field,{label:'Health'}, React.createElement(EnumSelect,{value:f.health,onChange:v=>up('health',v),options:HEALTH})),
+      React.createElement(Field,{label:'Conviction'}, React.createElement(EnumSelect,{value:f.conviction,onChange:v=>up('conviction',v),options:CONVICTION})),
+      React.createElement(Field,{label:'Priority'}, React.createElement(EnumSelect,{value:f.priority,onChange:v=>up('priority',v),options:PRIORITY}))),
+    f.status==='blocked' && React.createElement(Field,{label:'Blocker',hint:'what is in the way?'}, React.createElement('textarea',{className:'inp',value:f.blocker,placeholder:'Describe the blocker and who needs to clear it',onChange:e=>up('blocker',e.target.value)})),
+    React.createElement(Field,{label:'Linked OKRs',hint:'one project can serve several'}, React.createElement(OkrCheck,{selected:f.okrIds,onChange:v=>up('okrIds',v),okrs})),
+    React.createElement(Field,{label:'Project description doc',hint:'paste a link to a longer write-up (Google Doc, Notion, etc.)'}, React.createElement('input',{className:'inp',type:'url',value:f.docUrl,placeholder:'https://\u2026',onChange:e=>up('docUrl',e.target.value)})),
+    React.createElement(Field,{label:'Project description'}, React.createElement('textarea',{className:'inp',value:f.details,placeholder:'What is this project, in plain terms, for someone with no context?',onChange:e=>up('details',e.target.value)}))
+  );
+}
+
+function TaskForm({initial, onSave, onClose, people, projects, lockProject}){
+  const [f,setF]=useState(()=>Object.assign({title:'',projectIds:lockProject?[lockProject]:[],ownerIds:[],status:'in_progress',priority:'med',dueDate:'',blocker:''}, initial||{}));
+  const up=(k,v)=>setF(s=>({...s,[k]:v}));
+  const valid=f.title.trim().length>0;
+  return React.createElement(Modal,{title:initial&&initial.id?'Edit task':'New task',onClose,wide:true,
+    footer:[React.createElement('button',{key:'c',className:'btn',onClick:onClose},'Cancel'),
+      React.createElement('button',{key:'s',className:'btn primary',disabled:!valid,onClick:()=>{onSave(f);onClose();}}, initial&&initial.id?'Save changes':'Create task')]},
+    React.createElement(Field,{label:'Task'}, React.createElement('input',{className:'inp',value:f.title,placeholder:'What needs to get done?',onChange:e=>up('title',e.target.value),autoFocus:true})),
+    React.createElement('div',{className:'f-row'},
+      React.createElement(Field,{label:'Owner(s)'}, React.createElement(PeopleCheck,{selected:f.ownerIds,onChange:v=>up('ownerIds',v),people})) ),
+    React.createElement('div',{className:'f-row'},
+      React.createElement(Field,{label:'Status'}, React.createElement(EnumSelect,{value:f.status,onChange:v=>up('status',v),options:STATUS})),
+      React.createElement(Field,{label:'Priority'}, React.createElement(EnumSelect,{value:f.priority,onChange:v=>up('priority',v),options:PRIORITY})),
+      React.createElement(Field,{label:'Due date'}, React.createElement('input',{type:'date',className:'inp',value:f.dueDate,onChange:e=>up('dueDate',e.target.value)}))),
+    f.status==='blocked' && React.createElement(Field,{label:'Blocker'}, React.createElement('textarea',{className:'inp',value:f.blocker,placeholder:'What is in the way?',onChange:e=>up('blocker',e.target.value)})),
+    React.createElement(Field,{label:'Linked project(s)'}, React.createElement('div',{className:'chk-grid'}, projects.map(p=>{
+      const on=(f.projectIds||[]).includes(p.id);
+      return React.createElement('label',{key:p.id,className:'chk'+(on?' on':'')}, React.createElement('input',{type:'checkbox',checked:on,onChange:()=>up('projectIds', on?f.projectIds.filter(x=>x!==p.id):[...(f.projectIds||[]),p.id])}), p.name.length>38?p.name.slice(0,38)+'\u2026':p.name);
+    })))
+  );
+}
+
+function ScEditor({items,onChange}){
+  const list=items||[];
+  return React.createElement('div',null,
+    list.map((t,i)=>React.createElement('div',{key:i,style:{display:'flex',gap:8,marginBottom:6}},
+      React.createElement('input',{className:'inp',value:t,onChange:e=>{const c=[...list];c[i]=e.target.value;onChange(c);}}),
+      React.createElement('button',{className:'btn icon',onClick:()=>onChange(list.filter((_,j)=>j!==i))},'\u00d7'))),
+    React.createElement('button',{className:'btn sm ghost',onClick:()=>onChange([...list,''])},'+ Add success criterion'));
+}
+function OkrForm({initial,onSave,onClose,people}){
+  const [f,setF]=useState(()=>Object.assign({num:'',theme:'',objective:'',ownerId:'',timeframe:'2026',successCriteria:[]}, initial||{}));
+  const up=(k,v)=>setF(s=>({...s,[k]:v}));
+  const valid=f.objective.trim().length>0 && f.theme.trim().length>0;
+  return React.createElement(Modal,{title:initial&&initial.id?'Edit objective':'New objective',onClose,wide:true,
+    footer:[React.createElement('button',{key:'c',className:'btn',onClick:onClose},'Cancel'),
+      React.createElement('button',{key:'s',className:'btn primary',disabled:!valid,onClick:()=>{onSave({...f,num:Number(f.num)||f.num});onClose();}}, initial&&initial.id?'Save changes':'Create objective')]},
+    React.createElement('div',{className:'f-row'},
+      React.createElement(Field,{label:'Number'}, React.createElement('input',{className:'inp',value:f.num,placeholder:'e.g. 9',onChange:e=>up('num',e.target.value)})),
+      React.createElement(Field,{label:'Objective name',hint:'short - shown as the title'}, React.createElement('input',{className:'inp',value:f.theme,placeholder:'e.g. Outbound Pilot',onChange:e=>up('theme',e.target.value)})),
+      React.createElement(Field,{label:'Target',hint:'completion date or window'}, React.createElement('input',{className:'inp',value:f.timeframe,placeholder:'e.g. Aug 2026',onChange:e=>up('timeframe',e.target.value)}))),
+    React.createElement(Field,{label:'Objective description'}, React.createElement('textarea',{className:'inp',value:f.objective,style:{minHeight:80},onChange:e=>up('objective',e.target.value)})),
+    React.createElement(Field,{label:'Owner'}, React.createElement(PersonPick,{value:f.ownerId,onChange:v=>up('ownerId',v),people,allowNone:true})),
+    React.createElement(Field,{label:'Success criteria'}, React.createElement(ScEditor,{items:f.successCriteria,onChange:v=>up('successCriteria',v)}))
+  );
+}
+function resizeImageFile(file, cb){
+  if(!file){ cb(''); return; }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const img=new Image();
+    img.onload=()=>{
+      const S=176, c=document.createElement('canvas'); c.width=S; c.height=S;
+      const ctx=c.getContext('2d');
+      const scale=Math.max(S/img.width, S/img.height);
+      const w=img.width*scale, h=img.height*scale;
+      ctx.drawImage(img,(S-w)/2,(S-h)/2,w,h);
+      try{ cb(c.toDataURL('image/jpeg',0.82)); }catch(e){ cb(''); }
+    };
+    img.onerror=()=>cb('');
+    img.src=reader.result;
+  };
+  reader.readAsDataURL(file);
+}
+function PersonForm({initial,onSave,onClose}){
+  const [f,setF]=useState(()=>Object.assign({name:'',role:'',dept:'',photoUrl:''}, initial||{}));
+  const up=(k,v)=>setF(s=>({...s,[k]:v}));
+  const fileRef=useRef(null);
+  const onPick=(e)=>{ const file=e.target.files&&e.target.files[0]; if(file) resizeImageFile(file,(url)=>up('photoUrl',url)); e.target.value=''; };
+  return React.createElement(Modal,{title:initial&&initial.id?'Edit person':'Add person',onClose,
+    footer:[React.createElement('button',{key:'c',className:'btn',onClick:onClose},'Cancel'),
+      React.createElement('button',{key:'s',className:'btn primary',disabled:!f.name.trim(),onClick:()=>{onSave(f);onClose();}},'Save')]},
+    React.createElement(Field,{label:'Photo',hint:'optional - shows on tiles instead of initials'},
+      React.createElement('div',{style:{display:'flex',alignItems:'center',gap:14}},
+        React.createElement(Avatar,{person:{id:f.id||'new',name:f.name||'?',photoUrl:f.photoUrl},size:'xl'}),
+        React.createElement('div',{style:{display:'flex',gap:8}},
+          React.createElement('button',{className:'btn sm',onClick:()=>fileRef.current&&fileRef.current.click()}, f.photoUrl?'Replace':'Upload photo'),
+          f.photoUrl && React.createElement('button',{className:'btn sm danger',onClick:()=>up('photoUrl','')},'Remove')),
+        React.createElement('input',{type:'file',accept:'image/*',ref:fileRef,style:{display:'none'},onChange:onPick}))),
+    React.createElement(Field,{label:'Name'}, React.createElement('input',{className:'inp',value:f.name,onChange:e=>up('name',e.target.value),autoFocus:true})),
+    React.createElement(Field,{label:'Role'}, React.createElement('input',{className:'inp',value:f.role,placeholder:'e.g. Customer Success',onChange:e=>up('role',e.target.value)}))
+  );
+}
+/* ============================================================
+   Navigation context + drill-down drawers
+   ============================================================ */
+const NavCtx = createContext({});
+const useNav = ()=>useContext(NavCtx);
+const CollapseCtx = createContext({n:0,expand:false});
+
+function MetaRow({k,children}){ return React.createElement('div',{style:{display:'contents'}}, React.createElement('div',{className:'k'},k), React.createElement('div',null,children)); }
+
+function NextStepRow({task, step}){
+  const { A } = useGtm();
+  const [editing,setEditing]=useState(false);
+  const [notes,setNotes]=useState(step.completionNotes||'');
+  const over = step.dueDate && !step.done && daysFromNow(step.dueDate)<0;
+  return React.createElement('div',{className:'ns'},
+    React.createElement('div',{className:'box'+(step.done?' done':''),onClick:()=>A.toggleNextStep(task,step.id),title:step.done?'Mark not done':'Mark complete'}, step.done?'\u2713':''),
+    React.createElement('div',{className:'body'+(step.done?' done':'')},
+      editing
+        ? React.createElement('div',{style:{display:'flex',gap:8}},
+            React.createElement('input',{className:'inp',defaultValue:step.text,onBlur:e=>{A.editNextStep(task,step.id,{text:e.target.value});},id:'edit_'+step.id}),
+            React.createElement('input',{type:'date',className:'inp',style:{maxWidth:150},defaultValue:step.dueDate||'',onChange:e=>A.editNextStep(task,step.id,{dueDate:e.target.value})}),
+            React.createElement('button',{className:'btn sm',onClick:()=>{const v=document.getElementById('edit_'+step.id).value; A.editNextStep(task,step.id,{text:v}); setEditing(false);}},'Done'))
+        : React.createElement('div',{className:'t'}, step.text),
+      React.createElement('div',{className:'meta-line'},
+        React.createElement('span',null,'Added ', relTime(step.createdAt)),
+        step.dueDate && React.createElement('span',{style:over?{color:'var(--red)',fontWeight:600}:null},'Due '+fmtDateShort(step.dueDate)+(over?' (late)':'')),
+        step.done && React.createElement('span',{style:{color:'var(--green)',fontWeight:600}},'Completed '+relTime(step.doneAt)),
+        !editing && React.createElement('span',{className:'linkish',onClick:()=>setEditing(true)},'edit'),
+        React.createElement('span',{className:'linkish',style:{color:'var(--muted)'},onClick:()=>A.deleteNextStep(task,step.id)},'remove')),
+      step.done && React.createElement('div',{style:{marginTop:6}},
+        React.createElement('input',{className:'inp',style:{fontSize:12,padding:'6px 9px'},placeholder:'Completion notes (optional)',value:notes,onChange:e=>setNotes(e.target.value),onBlur:()=>A.editNextStep(task,step.id,{completionNotes:notes})}))
+    ));
+}
+
+function AddNextStep({task}){
+  const { A } = useGtm();
+  const [text,setText]=useState(''); const [due,setDue]=useState('');
+  const add=()=>{ if(!text.trim())return; A.addNextStep(task,text.trim(),due); setText(''); setDue(''); };
+  return React.createElement('div',{style:{display:'flex',gap:8,marginTop:10}},
+    React.createElement('input',{className:'inp',placeholder:'Add the next step\u2026',value:text,onChange:e=>setText(e.target.value),onKeyDown:e=>{if(e.key==='Enter')add();}}),
+    React.createElement('input',{type:'date',className:'inp',style:{maxWidth:148},value:due,onChange:e=>setDue(e.target.value)}),
+    React.createElement('button',{className:'btn primary',onClick:add},'Add'));
+}
+
+function TaskDrawer({task}){
+  const { maps, projects, people, A } = useGtm();
+  const nav = useNav();
+  const [edit,setEdit]=useState(false); const [del,setDel]=useState(false); const [showDone,setShowDone]=useState(false);
+  const linkedProjects=(task.projectIds||[]).map(id=>maps.project[id]).filter(Boolean);
+  const open=(task.nextSteps||[]).filter(n=>!n.done); const done=(task.nextSteps||[]).filter(n=>n.done);
+  const fromProj = nav.drawer && nav.drawer.from ? maps.project[nav.drawer.from] : linkedProjects[0];
+  return React.createElement('div',{className:'drawer'},
+    React.createElement('div',{className:'dh'},
+      React.createElement('div',{style:{flex:1,minWidth:0}},
+        React.createElement('div',{className:'crumb'},
+          fromProj && React.createElement('a',{onClick:()=>nav.openProject(fromProj.id)}, fromProj.name.length>40?fromProj.name.slice(0,40)+'\u2026':fromProj.name),
+          fromProj && React.createElement('span',null,'\u203a'),
+          React.createElement('span',null,'Task')),
+        React.createElement('h1',{style:{fontSize:18,margin:'2px 0 6px'}}, task.title),
+        React.createElement('div',{style:{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}},
+          React.createElement(Pill,{kind:'status',value:task.status}),
+          React.createElement(Pill,{kind:'priority',value:task.priority}),
+          React.createElement(AvatarStack,{ids:task.ownerIds,map:maps.person,size:'md'}))),
+      React.createElement('button',{className:'btn sm',onClick:()=>setEdit(true)},'Edit'),
+      React.createElement('button',{className:'btn sm icon danger',onClick:()=>setDel(true)},'\uD83D\uDDD1'),
+      React.createElement('button',{className:'x',onClick:nav.closeDrawer},'\u00d7')),
+    React.createElement('div',{className:'db'},
+      task.status==='blocked' && task.blocker && React.createElement('div',{className:'flag',style:{marginBottom:14}}, '\u26d4 ', task.blocker),
+      React.createElement('div',{className:'kv',style:{marginBottom:18}},
+        React.createElement(MetaRow,{k:'Due date'}, React.createElement(DueTag,{date:task.dueDate,status:task.status})),
+        React.createElement(MetaRow,{k:'Last updated'}, React.createElement('span',{className:isStale(task.lastActivity,task.status)?'tag-due over':''}, relTime(task.lastActivity), isStale(task.lastActivity,task.status)?'  \u2014 stale':'')),
+        React.createElement(MetaRow,{k:'Owners'}, (task.ownerIds||[]).map(id=>maps.person[id]).filter(Boolean).map(p=>p.name).join(', ')||'Unassigned'),
+        React.createElement(MetaRow,{k:'Projects'}, linkedProjects.length? linkedProjects.map(p=>React.createElement('span',{key:p.id,className:'linkish',style:{marginRight:10},onClick:()=>nav.openProject(p.id)},p.name)) : React.createElement('span',{className:'muted'},'None'))),
+      React.createElement('div',{className:'spread',style:{marginTop:6}},
+        React.createElement('div',{className:'section-title',style:{margin:0}}, 'Next steps ', open.length?React.createElement('span',{className:'pill-s s-blue',style:{marginLeft:6}}, open.length+' open'):React.createElement('span',{className:'pill-s s-amber',style:{marginLeft:6}},'none open'))),
+      open.length===0 && task.status!=='done' && React.createElement('div',{className:'banner',style:{marginTop:8}}, '\u26a0\ufe0f No open next step. Add one so this keeps moving.'),
+      React.createElement('div',{style:{marginTop:8}}, open.map(n=>React.createElement(NextStepRow,{key:n.id,task,step:n}))),
+      React.createElement(AddNextStep,{task}),
+      done.length>0 && React.createElement('div',{style:{marginTop:18,borderTop:'1px solid var(--line)',paddingTop:12}},
+        React.createElement('div',{className:'spread',style:{cursor:'pointer'},onClick:()=>setShowDone(s=>!s)},
+          React.createElement('div',{className:'section-title',style:{margin:0}}, '\uD83D\uDD52 Completed history ('+done.length+')'),
+          React.createElement('span',{className:'linkish tiny'}, showDone?'hide':'show')),
+        showDone && React.createElement('div',{style:{marginTop:8}}, [...done].sort((a,b)=>String(b.doneAt||'').localeCompare(String(a.doneAt||''))).map(n=>React.createElement(NextStepRow,{key:n.id,task,step:n})))),
+      edit && React.createElement(TaskForm,{initial:task,people,projects,onClose:()=>setEdit(false),onSave:A.saveTask}),
+      del && React.createElement(Confirm,{text:'Delete this task and its next steps?',danger:true,onClose:()=>setDel(false),onConfirm:()=>{A.deleteTask(task.id);nav.closeDrawer();}})
+    ));
+}
+
+function ProjectDrawer({project}){
+  const { maps, okrs, people, projects, tasksForProject, A, okrConfidence } = useGtm();
+  const nav = useNav();
+  const [edit,setEdit]=useState(false); const [del,setDel]=useState(false); const [newTask,setNewTask]=useState(false); const [risk,setRisk]=useState(false);
+  const owner=maps.person[project.ownerId];
+  const linkedOkrs=(project.okrIds||[]).map(id=>maps.okr[id]).filter(Boolean);
+  const tasks=tasksForProject(project.id);
+  const openTasks=tasks.filter(t=>t.status!=='done');
+  const noStep=tasks.filter(t=>t.status!=='done' && (t.nextSteps||[]).filter(n=>!n.done).length===0);
+  return React.createElement('div',{className:'drawer'},
+    React.createElement('div',{className:'dh'},
+      React.createElement('div',{style:{flex:1,minWidth:0}},
+        React.createElement('div',{className:'crumb'},
+          React.createElement('a',{onClick:()=>{nav.closeDrawer();nav.go('projects');}},'Projects'),
+          React.createElement('span',null,'\u203a'),
+          linkedOkrs[0]?React.createElement('span',null,'O'+linkedOkrs[0].num+' '+linkedOkrs[0].theme):React.createElement('span',null,'Unlinked')),
+        React.createElement('h1',{style:{fontSize:19,margin:'2px 0 8px',letterSpacing:'-.3px'}}, project.name),
+        React.createElement('div',{style:{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}},
+          React.createElement('span',{style:{display:'inline-flex',alignItems:'center',cursor:'pointer'},title:'See the tasks driving this',onClick:()=>setRisk(true)}, React.createElement(Pill,{kind:'health',value:project.health}), React.createElement('span',{style:{marginLeft:3,opacity:.5,fontSize:10}},'\u25b8')),
+          React.createElement(Pill,{kind:'status',value:project.status}),
+          React.createElement(Pill,{kind:'conviction',value:project.conviction}),
+          React.createElement(Pill,{kind:'priority',value:project.priority}))),
+      React.createElement('button',{className:'btn sm',onClick:()=>setEdit(true)},'Edit'),
+      React.createElement('button',{className:'btn sm icon danger',onClick:()=>setDel(true)},'\uD83D\uDDD1'),
+      React.createElement('button',{className:'x',onClick:nav.closeDrawer},'\u00d7')),
+    React.createElement('div',{className:'db'},
+      project.status==='blocked' && project.blocker && React.createElement('div',{className:'flag',style:{marginBottom:14}}, '\u26d4 ', project.blocker),
+      project.outcome && React.createElement('div',{className:'note',style:{marginBottom:16}}, React.createElement('b',null,'Outcome: '), project.outcome),
+      React.createElement('div',{className:'kv',style:{marginBottom:16}},
+        React.createElement(MetaRow,{k:'Owner'}, owner?React.createElement('span',{style:{display:'inline-flex',alignItems:'center',gap:9}},React.createElement(Avatar,{person:owner,size:'md'}),owner.name):React.createElement('span',{className:'muted'},'Unassigned')),
+        React.createElement(MetaRow,{k:'Due date'}, React.createElement(DueTag,{date:project.dueDate,status:project.status})),
+        React.createElement(MetaRow,{k:'Last activity'}, React.createElement('span',{className:isStale(project.lastActivity,project.status)?'tag-due over':''}, relTime(project.lastActivity), isStale(project.lastActivity,project.status)?'  \u2014 stale':'')),
+        React.createElement(MetaRow,{k:'Linked OKRs'}, linkedOkrs.length? linkedOkrs.map(o=>React.createElement('span',{key:o.id,className:'pill-s s-navy',style:{marginRight:6,cursor:'pointer'},title:o.objective,onClick:()=>{nav.closeDrawer();nav.go('okrs');}},'O'+o.num+' \u00b7 '+o.theme)) : React.createElement('span',{className:'muted'},'None'))),
+      (project.details||project.docUrl) && React.createElement('div',{style:{marginBottom:16}},
+        React.createElement('div',{className:'section-title'},'Project description'),
+        project.docUrl && React.createElement('a',{href:(/^https?:\/\//i.test(project.docUrl)?project.docUrl:'https://'+project.docUrl),target:'_blank',rel:'noopener noreferrer',className:'btn sm',style:{marginBottom:project.details?10:0,display:'inline-flex'}}, '\uD83D\uDD17 Open full description'),
+        project.details && React.createElement('div',{style:{whiteSpace:'pre-wrap'}}, project.details)),
+      React.createElement('div',{className:'spread'},
+        React.createElement('div',{className:'section-title',style:{margin:0}}, 'Tasks ('+tasks.length+')'),
+        React.createElement('button',{className:'btn sm primary',onClick:()=>setNewTask(true)},'+ New task')),
+      noStep.length>0 && React.createElement('div',{className:'banner',style:{margin:'8px 0'}}, '\u26a0\ufe0f '+noStep.length+' active task'+(noStep.length>1?'s have':' has')+' no open next step'),
+      React.createElement('div',{style:{marginTop:8}}, tasks.length? tasks.map(t=>{
+        const opens=(t.nextSteps||[]).filter(n=>!n.done).length; const over=isOverdue(t.dueDate,t.status);
+        return React.createElement('div',{key:t.id,className:'card',style:{padding:'11px 13px',marginBottom:8,cursor:'pointer',display:'flex',alignItems:'center',gap:12},onClick:()=>nav.openTask(t.id,project.id)},
+          React.createElement('div',{style:{flex:1,minWidth:0}},
+            React.createElement('div',{style:{fontWeight:600,display:'flex',gap:8,alignItems:'center'}}, t.title, t.status==='blocked'&&React.createElement('span',{className:'pill-s s-red'},'Blocked')),
+            React.createElement('div',{className:'meta-line',style:{marginTop:4}},
+              React.createElement(DueTag,{date:t.dueDate,status:t.status}),
+              React.createElement('span',{style:opens===0&&t.status!=='done'?{color:'var(--amber)',fontWeight:600}:null}, opens+' open step'+(opens===1?'':'s')),
+              React.createElement('span',null,'updated '+relTime(t.lastActivity)))),
+          React.createElement(AvatarStack,{ids:t.ownerIds,map:maps.person,size:'md'}),
+          React.createElement(Pill,{kind:'status',value:t.status}));
+      }) : React.createElement('div',{className:'empty'}, React.createElement('div',{className:'big'},'\u2713'), 'No tasks yet. Break this project into its first task.')),
+      edit && React.createElement(ProjectForm,{initial:project,people,okrs,onClose:()=>setEdit(false),onSave:A.saveProject}),
+      newTask && React.createElement(TaskForm,{lockProject:project.id,people,projects,onClose:()=>setNewTask(false),onSave:A.saveTask}),
+      del && React.createElement(Confirm,{text:'Delete this project? Its tasks will be unlinked but not deleted.',danger:true,onClose:()=>setDel(false),onConfirm:()=>{A.deleteProject(project.id);nav.closeDrawer();}}),
+      risk && React.createElement(RiskModal,{kind:'project',entity:project,onClose:()=>setRisk(false)})
+    ));
+}
+/* ============================================================
+   Views
+   ============================================================ */
+function Disclosure({title, count, open, onToggle, children}){
+  return React.createElement('div',{className:'disc'},
+    React.createElement('div',{className:'disc-head',onClick:onToggle},
+      React.createElement('span',{className:'disc-title'}, title),
+      count!=null && React.createElement('span',{className:'disc-count'}, count),
+      React.createElement('span',{className:'disc-chev'+(open?' open':'')},'\u276f')),
+    open && React.createElement('div',{className:'disc-body'}, children));
+}
+function TargetLabel({value}){
+  if(!value) return null;
+  return React.createElement('span',{className:'target'},
+    React.createElement('span',{className:'lbl'},'Target'),
+    React.createElement('span',{className:'val'}, value));
+}
+function StatCard({n,label,tone}){ return React.createElement('div',{className:'stat'+(tone?' '+tone:'')}, React.createElement('div',{className:'n'},n), React.createElement('div',{className:'l'},label)); }
+
+/* ---- why-at-risk drill-down ---- */
+function daysSince(iso){ return Math.floor((Date.now()-new Date(iso).getTime())/86400000); }
+function projectFlags(p){
+  const out=[];
+  if(p.status==='blocked') out.push({sev:'s-red',text:'Blocked'+(p.blocker?': '+p.blocker:'')});
+  if(isOverdue(p.dueDate,p.status)) out.push({sev:'s-red',text:'Overdue by '+Math.abs(daysFromNow(p.dueDate))+'d'});
+  if(p.health==='off_track') out.push({sev:'s-red',text:'Marked off track'});
+  else if(p.health==='at_risk') out.push({sev:'s-amber',text:'Marked at risk'});
+  if(p.status!=='done' && isStale(p.lastActivity,p.status)) out.push({sev:'s-amber',text:'No update in '+daysSince(p.lastActivity)+'d'});
+  return out;
+}
+function taskFlags(t){
+  const out=[];
+  if(t.status==='blocked') out.push({sev:'s-red',text:'Blocked'+(t.blocker?': '+t.blocker:'')});
+  if(isOverdue(t.dueDate,t.status)) out.push({sev:'s-red',text:'Overdue by '+Math.abs(daysFromNow(t.dueDate))+'d'});
+  if(t.status!=='done' && (t.nextSteps||[]).filter(n=>!n.done).length===0) out.push({sev:'s-amber',text:'No open next step'});
+  if(t.status!=='done' && isStale(t.lastActivity,t.status)) out.push({sev:'s-amber',text:'No update in '+daysSince(t.lastActivity)+'d'});
+  return out;
+}
+function FlagRow({flags}){ return React.createElement('div',{style:{display:'flex',gap:6,flexWrap:'wrap',marginTop:4}}, flags.map((fl,i)=>React.createElement('span',{key:i,className:'pill-s '+fl.sev}, fl.text))); }
+
+function RiskModal({kind, entity, onClose}){
+  const { projectsForOkr, tasksForProject, maps } = useGtm();
+  const nav=useNav();
+  const goProject=(id)=>{ onClose(); nav.closeDrawer(); nav.openProject(id); };
+  const goTask=(id,from)=>{ onClose(); nav.closeDrawer(); nav.openTask(id,from); };
+  const title = kind==='okr' ? ('Objective '+entity.num+' - what is driving this') : (entity.name+' - what is driving this');
+
+  let body;
+  if(kind==='okr'){
+    const flagged = projectsForOkr(entity.id).map(p=>({p,flags:projectFlags(p)})).filter(o=>o.flags.length);
+    body = flagged.length ? flagged.map(({p,flags})=>{
+      const tflags = tasksForProject(p.id).map(t=>({t,flags:taskFlags(t)})).filter(o=>o.flags.length);
+      return React.createElement('div',{key:p.id,className:'card',style:{padding:'12px 14px',marginBottom:10,borderLeft:'4px solid '+(HEALTH[p.health]||HEALTH.on_track).color}},
+        React.createElement('div',{className:'spread'},
+          React.createElement('div',{className:'linkish',style:{fontWeight:650,fontSize:14},onClick:()=>goProject(p.id)}, p.name),
+          React.createElement('span',{className:'tiny muted'}, maps.person[p.ownerId]?maps.person[p.ownerId].name.split(' ')[0]:'\u2014')),
+        React.createElement(FlagRow,{flags}),
+        tflags.length>0 && React.createElement('div',{style:{marginTop:10,paddingTop:8,borderTop:'1px dashed var(--line)'}},
+          React.createElement('div',{className:'tiny muted',style:{marginBottom:4,fontWeight:600}},'Tasks involved'),
+          tflags.map(({t,flags})=>React.createElement('div',{key:t.id,style:{padding:'6px 0'}},
+            React.createElement('div',{className:'linkish',style:{fontWeight:550},onClick:()=>goTask(t.id,p.id)}, '\u2192 '+t.title),
+            React.createElement(FlagRow,{flags})))));
+    }) : null;
+  } else {
+    const tflags = tasksForProject(entity.id).map(t=>({t,flags:taskFlags(t)})).filter(o=>o.flags.length);
+    body = tflags.length ? tflags.map(({t,flags})=>React.createElement('div',{key:t.id,className:'card',style:{padding:'11px 13px',marginBottom:8}},
+      React.createElement('div',{className:'linkish',style:{fontWeight:650},onClick:()=>goTask(t.id,entity.id)}, t.title),
+      React.createElement(FlagRow,{flags}))) : null;
+  }
+  return React.createElement(Modal,{title,onClose,wide:true},
+    kind==='okr' && React.createElement('div',{className:'muted',style:{fontSize:13,marginBottom:12}}, entity.objective),
+    body || React.createElement('div',{className:'empty'}, React.createElement('div',{className:'big'},'\u2705'), 'Nothing is dragging this down right now. All work here is on track, owned, and current.'));
+}
+
+
+function ProjectsView(){
+  const { projects, okrs, people, maps, A, tasksForProject } = useGtm();
+  const nav=useNav();
+  const [q,setQ]=useState(''); const [fOwner,setFOwner]=useState(''); const [fHealth,setFHealth]=useState(''); const [fStatus,setFStatus]=useState(''); const [fOkr,setFOkr]=useState(''); const [add,setAdd]=useState(false); const [riskProj,setRiskProj]=useState(null); const [vmode,setVmode]=useState('table');
+  let rows=projects.filter(p=>{
+    if(q && !(p.name+' '+(p.outcome||'')).toLowerCase().includes(q.toLowerCase())) return false;
+    if(fOwner && p.ownerId!==fOwner) return false;
+    if(fHealth && p.health!==fHealth) return false;
+    if(fStatus && p.status!==fStatus) return false;
+    if(fOkr && !(p.okrIds||[]).includes(fOkr)) return false;
+    return true;
+  });
+  const order={off_track:0,at_risk:1,on_track:2};
+  rows=[...rows].sort((a,b)=> (order[a.health]-order[b.health]) || (isOverdue(a.dueDate,a.status)?-1:0)-(isOverdue(b.dueDate,b.status)?-1:0) || (a.dueDate||'z').localeCompare(b.dueDate||'z'));
+  const projCard=(p)=>{
+    const owner=maps.person[p.ownerId]; const opens=tasksForProject(p.id).filter(t=>t.status!=='done').length;
+    return React.createElement('div',{key:p.id,className:'card',style:{padding:'12px 15px',marginBottom:8,cursor:'pointer',borderLeft:'4px solid '+(HEALTH[p.health]||HEALTH.on_track).color},onClick:()=>nav.openProject(p.id)},
+      React.createElement('div',{className:'spread'},
+        React.createElement('div',{style:{fontWeight:650,fontSize:14}}, p.name),
+        React.createElement('span',{style:{display:'inline-flex',alignItems:'center',cursor:'pointer'},title:'See driving tasks',onClick:(e)=>{e.stopPropagation();setRiskProj(p);}}, React.createElement(Pill,{kind:'health',value:p.health}), React.createElement('span',{style:{marginLeft:3,opacity:.5,fontSize:10}},'\u25b8'))),
+      p.outcome && React.createElement('div',{style:{fontSize:12.5,color:'var(--muted)',margin:'4px 0 8px',lineHeight:1.45}}, p.outcome),
+      React.createElement('div',{style:{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}},
+        owner?React.createElement('span',{style:{display:'inline-flex',gap:5,alignItems:'center'}},React.createElement(Avatar,{person:owner,size:'sm'}),React.createElement('span',{className:'tiny muted'},owner.name.split(' ')[0])):React.createElement('span',{className:'tiny muted'},'Unassigned'),
+        React.createElement(Pill,{kind:'conviction',value:p.conviction}),
+        React.createElement(Pill,{kind:'status',value:p.status}),
+        React.createElement(DueTag,{date:p.dueDate,status:p.status}),
+        React.createElement('span',{className:'tiny muted'}, opens+' open task'+(opens===1?'':'s'))));
+  };
+  return React.createElement('div',null,
+    React.createElement('div',{className:'spread',style:{marginBottom:14,flexWrap:'wrap',gap:10}},
+      React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}},
+        React.createElement('input',{className:'inp',style:{width:200},placeholder:'Search projects\u2026',value:q,onChange:e=>setQ(e.target.value)}),
+        React.createElement('select',{className:'inp',style:{width:'auto'},value:fOkr,onChange:e=>setFOkr(e.target.value)}, React.createElement('option',{value:''},'All objectives'), okrs.map(o=>React.createElement('option',{key:o.id,value:o.id},'O'+o.num+' '+o.theme))),
+        React.createElement('select',{className:'inp',style:{width:'auto'},value:fOwner,onChange:e=>setFOwner(e.target.value)}, React.createElement('option',{value:''},'All owners'), people.map(p=>React.createElement('option',{key:p.id,value:p.id},p.name))),
+        React.createElement('select',{className:'inp',style:{width:'auto'},value:fHealth,onChange:e=>setFHealth(e.target.value)}, React.createElement('option',{value:''},'All health'), HEALTH_ORDER.map(h=>React.createElement('option',{key:h,value:h},HEALTH[h].label))),
+        React.createElement('select',{className:'inp',style:{width:'auto'},value:fStatus,onChange:e=>setFStatus(e.target.value)}, React.createElement('option',{value:''},'All statuses'), STATUS_ORDER.map(st=>React.createElement('option',{key:st,value:st},STATUS[st].label)))),
+      React.createElement('div',{style:{display:'flex',gap:8,alignItems:'center'}},
+        React.createElement('div',{className:'seg'},
+          React.createElement('button',{className:vmode==='table'?'on':'',onClick:()=>setVmode('table')},'Table'),
+          React.createElement('button',{className:vmode==='list'?'on':'',onClick:()=>setVmode('list')},'List')),
+        React.createElement('button',{className:'btn primary',onClick:()=>setAdd(true)},'+ New project'))),
+    vmode==='table'
+    ? React.createElement('div',{className:'card',style:{overflow:'auto'}},
+      React.createElement('table',{className:'tbl'},
+        React.createElement('thead',null,React.createElement('tr',null,['Project','Owner','Objectives','Conviction','Health','Status','Due'].map(h=>React.createElement('th',{key:h},h)))),
+        React.createElement('tbody',null, rows.map(p=>{
+          const okrChips=(p.okrIds||[]).map(id=>maps.okr[id]).filter(Boolean);
+          return React.createElement('tr',{key:p.id,onClick:()=>nav.openProject(p.id)},
+            React.createElement('td',{className:'title-cell',style:{maxWidth:280}}, p.name, p.outcome&&React.createElement('small',null, p.outcome.length>70?p.outcome.slice(0,70)+'\u2026':p.outcome)),
+            React.createElement('td',null, maps.person[p.ownerId]?React.createElement('span',{style:{display:'inline-flex',gap:6,alignItems:'center'}},React.createElement(Avatar,{person:maps.person[p.ownerId],size:'sm'}),maps.person[p.ownerId].name.split(' ')[0]):React.createElement('span',{className:'muted tiny'},'\u2014')),
+            React.createElement('td',null, okrChips.map(o=>React.createElement('span',{key:o.id,className:'pill-s s-navy',style:{marginRight:4},title:o.objective},'O'+o.num))),
+            React.createElement('td',null, React.createElement(Pill,{kind:'conviction',value:p.conviction})),
+            React.createElement('td',{onClick:(e)=>{e.stopPropagation();setRiskProj(p);},title:'See driving tasks'}, React.createElement('span',{style:{display:'inline-flex',alignItems:'center',cursor:'pointer'}}, React.createElement(Pill,{kind:'health',value:p.health}), React.createElement('span',{style:{marginLeft:3,opacity:.5,fontSize:10}},'\u25b8'))),
+            React.createElement('td',null, React.createElement(Pill,{kind:'status',value:p.status})),
+            React.createElement('td',null, React.createElement(DueTag,{date:p.dueDate,status:p.status})));
+        }))),
+      rows.length===0 && React.createElement('div',{className:'empty'},'No projects match these filters.'))
+    : (function(){
+        const sortedOkrs=[...okrs].sort((a,b)=>(a.num||99)-(b.num||99));
+        const groups=sortedOkrs.map(o=>({o,items:rows.filter(p=>(p.okrIds||[]).includes(o.id))})).filter(g=>g.items.length);
+        const unlinked=rows.filter(p=>!(p.okrIds||[]).some(id=>maps.okr[id]));
+        return React.createElement('div',null,
+          rows.length===0 && React.createElement('div',{className:'empty card',style:{padding:36}},'No projects match these filters.'),
+          groups.map(g=>React.createElement('div',{key:g.o.id,style:{marginBottom:22}},
+            React.createElement('div',{style:{display:'flex',gap:8,alignItems:'center',margin:'0 0 9px'}},
+              React.createElement('span',{className:'pill-s s-navy'},'O'+g.o.num),
+              React.createElement('span',{style:{fontWeight:700,fontSize:15,letterSpacing:'-.2px'}},g.o.theme),
+              React.createElement('span',{className:'tiny muted'},g.items.length+' project'+(g.items.length>1?'s':''))),
+            g.items.map(p=>projCard(p)))),
+          unlinked.length>0 && React.createElement('div',{style:{marginBottom:22}},
+            React.createElement('div',{style:{fontWeight:700,fontSize:15,margin:'0 0 9px'}},'Not linked to an objective'),
+            unlinked.map(p=>projCard(p))));
+      })(),
+    add && React.createElement(ProjectForm,{people,okrs,onClose:()=>setAdd(false),onSave:A.saveProject}),
+    riskProj && React.createElement(RiskModal,{kind:'project',entity:riskProj,onClose:()=>setRiskProj(null)}));
+}
+
+function OkrProjectList({ps}){
+  const { maps } = useGtm(); const nav=useNav();
+  if(!ps.length) return React.createElement('div',{className:'muted tiny',style:{padding:'2px 0'}},'No projects linked yet.');
+  return ps.map((p,i)=>React.createElement('div',{key:p.id,style:{display:'flex',gap:11,alignItems:'center',padding:'10px 0',cursor:'pointer',borderTop:i?'1px solid var(--line)':'none'},onClick:()=>nav.openProject(p.id)},
+    React.createElement(HealthDot,{value:p.health}),
+    React.createElement('span',{style:{flex:1,fontSize:13.5,fontWeight:550,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}, p.name),
+    isOverdue(p.dueDate,p.status)&&React.createElement('span',{className:'pill-s s-red'},'overdue'),
+    p.dueDate&&React.createElement('span',{className:'tiny muted'}, fmtDateShort(p.dueDate)),
+    React.createElement(Avatar,{person:maps.person[p.ownerId],size:'sm'})));
+}
+function MetaCol({label, children}){
+  return React.createElement('span',{style:{textAlign:'center'}},
+    React.createElement('div',{style:{fontSize:9.5,textTransform:'uppercase',letterSpacing:'.8px',color:'var(--muted-2)',fontWeight:700}}, label),
+    React.createElement('div',{style:{fontSize:13.5,fontWeight:700,color:'var(--ink)'}}, children));
+}
+function ClampText({text}){
+  const [open,setOpen]=useState(false);
+  const long=(text||'').length>150;
+  const base={fontSize:14,lineHeight:1.6,color:'var(--ink-soft)',fontWeight:600,marginTop:9};
+  const clamp=(!open&&long)?{display:'-webkit-box',WebkitLineClamp:3,WebkitBoxOrient:'vertical',overflow:'hidden'}:{};
+  return React.createElement('div',null,
+    React.createElement('div',{style:Object.assign({},base,clamp)}, text),
+    long && React.createElement('span',{className:'linkish tiny',style:{display:'inline-block',marginTop:4},onClick:()=>setOpen(o=>!o)}, open?'view less':'view more'));
+}
+function OkrCard({okr}){
+  const { projectsForOkr, maps, okrConfidence, people, A } = useGtm();
+  const nav=useNav(); const cc=useContext(CollapseCtx);
+  const [edit,setEdit]=useState(false); const [del,setDel]=useState(false); const [risk,setRisk]=useState(false);
+  const [sc,setSc]=useState(false); const [pr,setPr]=useState(false);
+  useEffect(()=>{ if(cc.n>0){ setSc(cc.expand); setPr(cc.expand); } },[cc.n]);
+  const conf=okrConfidence(okr.id); const ps=projectsForOkr(okr.id); const owner=maps.person[okr.ownerId];
+  const anyOpen=sc||pr;
+  return React.createElement('div',{className:'card',style:{padding:'22px 24px'}},
+    React.createElement('div',{className:'spread',style:{alignItems:'flex-start',gap:12}},
+      React.createElement('div',{style:{flex:1,minWidth:0}},
+        React.createElement('div',{style:{display:'flex',gap:11,alignItems:'center',flexWrap:'wrap'}},
+          React.createElement('span',{className:'pill-s s-navy'},'O'+okr.num),
+          React.createElement('span',{style:{fontWeight:800,fontSize:20,letterSpacing:'-.4px',color:'var(--ink)'}}, okr.theme),
+          React.createElement('span',{className:'pill-s '+conf.cls+' click',title:'See what is driving this',onClick:()=>setRisk(true)}, conf.label, React.createElement('span',{style:{marginLeft:4,opacity:.55,fontSize:10}},'\u25b8'))),
+        okr.objective && React.createElement(ClampText,{text:okr.objective})),
+      React.createElement('div',{style:{display:'flex',gap:4}},
+        anyOpen && React.createElement('button',{className:'btn sm icon',title:'Collapse this card',onClick:()=>{setSc(false);setPr(false);}},'\u2303'),
+        React.createElement('button',{className:'btn sm icon',onClick:()=>setEdit(true)},'\u270e'),
+        React.createElement('button',{className:'btn sm icon danger',onClick:()=>setDel(true)},'\uD83D\uDDD1'))),
+    React.createElement('div',{style:{display:'flex',gap:34,alignItems:'center',justifyContent:'flex-start',flexWrap:'wrap',margin:'18px 0 6px'}},
+      owner&&React.createElement('span',{style:{display:'inline-flex',gap:10,alignItems:'center'}}, React.createElement(Avatar,{person:owner,size:'lg'}), React.createElement(MetaCol,{label:'Owner'}, owner.name)),
+      React.createElement(TargetLabel,{value:okr.timeframe}),
+      React.createElement(MetaCol,{label:'Projects'}, ps.length)),
+    React.createElement('div',{style:{marginTop:'auto',paddingTop:8}},
+      React.createElement(Disclosure,{title:'Success criteria',count:(okr.successCriteria||[]).length,open:sc,onToggle:()=>setSc(o=>!o)},
+        React.createElement('ul',{style:{margin:0,paddingLeft:18,fontSize:13.5,color:'var(--ink-soft)',lineHeight:1.75}}, (okr.successCriteria||[]).map((c,i)=>React.createElement('li',{key:i,style:{marginBottom:3}},c)))),
+      React.createElement(Disclosure,{title:'Projects',count:ps.length,open:pr,onToggle:()=>setPr(o=>!o)},
+        React.createElement(OkrProjectList,{ps:ps}))),
+    edit && React.createElement(OkrForm,{initial:okr,people:people,onClose:()=>setEdit(false),onSave:A.saveOkr}),
+    del && React.createElement(Confirm,{text:'Delete Objective '+okr.num+'? Linked projects will be unlinked.',danger:true,onClose:()=>setDel(false),onConfirm:()=>A.deleteOkr(okr.id)}),
+    risk && React.createElement(RiskModal,{kind:'okr',entity:okr,onClose:()=>setRisk(false)}));
+}
+function OkrsView(){
+  const { okrs, people, A } = useGtm();
+  const [add,setAdd]=useState(false);
+  const sorted=[...okrs].sort((a,b)=>(a.num||99)-(b.num||99));
+  return React.createElement('div',null,
+    React.createElement('div',{className:'spread',style:{marginBottom:14}},
+      React.createElement('div',{className:'muted',style:{fontSize:13}}, sorted.length+' objectives \u00b7 confidence rolls up from project health'),
+      React.createElement('button',{className:'btn primary',onClick:()=>setAdd(true)},'+ New objective')),
+    React.createElement('div',{className:'okr-grid'}, sorted.map(o=>React.createElement(OkrCard,{key:o.id,okr:o}))),
+    add && React.createElement(OkrForm,{people,onClose:()=>setAdd(false),onSave:A.saveOkr}));
+}
+
+function ExecOkrCard({okr, onRisk}){
+  const { maps, projectsForOkr, okrConfidence } = useGtm();
+  const cc=useContext(CollapseCtx);
+  const [sc,setSc]=useState(false); const [pr,setPr]=useState(false);
+  useEffect(()=>{ if(cc.n>0){ setSc(cc.expand); setPr(cc.expand); } },[cc.n]);
+  const o=okr; const conf=okrConfidence(o.id); const ps=projectsForOkr(o.id); const owner=maps.person[o.ownerId];
+  const anyOpen=sc||pr;
+  return React.createElement('div',{className:'card',style:{padding:'22px 24px',borderLeft:'4px solid '+(HEALTH[conf.health]||HEALTH.on_track).color}},
+    React.createElement('div',{style:{display:'flex',gap:11,alignItems:'center',flexWrap:'wrap'}},
+      React.createElement('span',{className:'pill-s s-navy'},'O'+o.num),
+      React.createElement('span',{style:{flex:1,fontWeight:800,fontSize:19,letterSpacing:'-.3px',color:'var(--ink)'}}, o.theme),
+      anyOpen && React.createElement('button',{className:'btn sm icon',title:'Collapse this card',onClick:()=>{setSc(false);setPr(false);}},'\u2303'),
+      React.createElement('span',{className:'pill-s '+conf.cls+' click',title:'See what is driving this',onClick:()=>onRisk(o)}, conf.label, React.createElement('span',{style:{marginLeft:4,opacity:.55,fontSize:10}},'\u25b8'))),
+    o.objective && React.createElement(ClampText,{text:o.objective}),
+    React.createElement('div',{style:{display:'flex',gap:34,alignItems:'center',justifyContent:'flex-start',flexWrap:'wrap',margin:'18px 0 6px'}},
+      owner&&React.createElement('span',{style:{display:'inline-flex',gap:10,alignItems:'center'}}, React.createElement(Avatar,{person:owner,size:'lg'}), React.createElement(MetaCol,{label:'Owner'}, owner.name)),
+      React.createElement(TargetLabel,{value:o.timeframe}),
+      React.createElement(MetaCol,{label:'Projects'}, ps.length)),
+    React.createElement('div',{style:{marginTop:'auto',paddingTop:8}},
+      React.createElement(Disclosure,{title:'Success criteria',count:(o.successCriteria||[]).length,open:sc,onToggle:()=>setSc(x=>!x)},
+        React.createElement('ul',{style:{margin:0,paddingLeft:18,fontSize:13.5,color:'var(--ink-soft)',lineHeight:1.75}}, (o.successCriteria||[]).map((c,i)=>React.createElement('li',{key:i,style:{marginBottom:3}},c)))),
+      React.createElement(Disclosure,{title:'Projects',count:ps.length,open:pr,onToggle:()=>setPr(x=>!x)},
+        React.createElement(OkrProjectList,{ps:ps}))));
+}
+function ExecSummary(){
+  const { okrs, projects, projectsForOkr, okrConfidence } = useGtm();
+  const sorted=[...okrs].sort((a,b)=>(a.num||99)-(b.num||99));
+  const allActive=projects.filter(p=>p.status!=='done');
+  const onTrack=sorted.filter(o=>okrConfidence(o.id).health==='on_track').length;
+  const atRisk=sorted.filter(o=>{const h=okrConfidence(o.id).health;return h==='at_risk'||h==='off_track';}).length;
+  const overdue=allActive.filter(p=>isOverdue(p.dueDate,p.status)).length;
+  const blocked=allActive.filter(p=>p.status==='blocked').length;
+  const [riskOkr,setRiskOkr]=useState(null);
+  return React.createElement('div',null,
+    React.createElement('div',{className:'grid',style:{gridTemplateColumns:'repeat(4,1fr)',marginBottom:20}},
+      React.createElement(StatCard,{n:onTrack+'/'+sorted.length,label:'Objectives on track',tone:'good'}),
+      React.createElement(StatCard,{n:atRisk,label:'Objectives needing attention',tone:atRisk?'warn':null}),
+      React.createElement(StatCard,{n:overdue,label:'Projects overdue',tone:overdue?'alert':null}),
+      React.createElement(StatCard,{n:blocked,label:'Projects blocked',tone:blocked?'alert':null})),
+    React.createElement('div',{className:'okr-grid'}, sorted.map(o=>React.createElement(ExecOkrCard,{key:o.id,okr:o,onRisk:setRiskOkr}))),
+    riskOkr && React.createElement(RiskModal,{kind:'okr',entity:riskOkr,onClose:()=>setRiskOkr(null)}));
+}
+/* ---------------- My Work ---------------- */
+function MyWorkView(){
+  const { projects, tasks, people, maps, me, setMe, A, tasksForProject } = useGtm();
+  const nav=useNav();
+  if(!me){
+    return React.createElement('div',{className:'card',style:{padding:24,maxWidth:480,margin:'10px auto',textAlign:'center'}},
+      React.createElement('div',{style:{fontSize:30,marginBottom:8}},'\uD83D\uDC4B'),
+      React.createElement('h3',{style:{marginTop:0}},'Who are you?'),
+      React.createElement('p',{className:'muted',style:{fontSize:13}},'Pick your name so this view shows what you own. Stored on this device only.'),
+      React.createElement('select',{className:'inp',style:{maxWidth:300,margin:'0 auto'},value:'',onChange:e=>setMe(e.target.value)},
+        React.createElement('option',{value:''},'Select your name\u2026'),
+        people.map(p=>React.createElement('option',{key:p.id,value:p.id},p.name))));
+  }
+  const myProjects=projects.filter(p=>p.ownerId===me).sort((a,b)=>(a.dueDate||'z').localeCompare(b.dueDate||'z'));
+  const myTasks=tasks.filter(t=>(t.ownerIds||[]).includes(me) && t.status!=='done').sort((a,b)=>(a.dueDate||'z').localeCompare(b.dueDate||'z'));
+  const meP=maps.person[me];
+  return React.createElement('div',null,
+    React.createElement('div',{className:'spread',style:{marginBottom:16}},
+      React.createElement('div',{style:{display:'flex',gap:10,alignItems:'center'}}, React.createElement(Avatar,{person:meP,size:'lg'}), React.createElement('div',null, React.createElement('div',{style:{fontWeight:700,fontSize:16}}, meP?meP.name:''), React.createElement('div',{className:'muted tiny'}, meP?meP.role:''))),
+      React.createElement('select',{className:'inp',style:{width:'auto'},value:me,onChange:e=>setMe(e.target.value)}, people.map(p=>React.createElement('option',{key:p.id,value:p.id},p.name)))),
+    React.createElement('div',{className:'grid',style:{gridTemplateColumns:'1fr 1fr',gap:16,alignItems:'start'}},
+      React.createElement('div',null,
+        React.createElement('div',{className:'section-title'},'Projects I own ('+myProjects.length+')'),
+        myProjects.length? myProjects.map(p=>{
+          const tk=tasksForProject(p.id); const opens=tk.filter(t=>t.status!=='done').length;
+          return React.createElement('div',{key:p.id,className:'card',style:{padding:'12px 14px',marginBottom:10,cursor:'pointer',borderLeft:'4px solid '+(HEALTH[p.health]||HEALTH.on_track).color},onClick:()=>nav.openProject(p.id)},
+            React.createElement('div',{style:{fontWeight:650,marginBottom:4}}, p.name),
+            React.createElement('div',{className:'meta-line'}, React.createElement(Pill,{kind:'status',value:p.status}), React.createElement(DueTag,{date:p.dueDate,status:p.status}), React.createElement('span',null,opens+' open task'+(opens===1?'':'s'))));
+        }) : React.createElement('div',{className:'muted tiny',style:{padding:8}},'Nothing assigned to you yet.')),
+      React.createElement('div',null,
+        React.createElement('div',{className:'section-title'},'Tasks I own ('+myTasks.length+')'),
+        myTasks.length? myTasks.map(t=>{
+          const opens=(t.nextSteps||[]).filter(n=>!n.done);
+          return React.createElement('div',{key:t.id,className:'card',style:{padding:'12px 14px',marginBottom:10}},
+            React.createElement('div',{className:'spread'},
+              React.createElement('div',{className:'linkish',style:{fontWeight:650},onClick:()=>nav.openTask(t.id)}, t.title),
+              React.createElement(DueTag,{date:t.dueDate,status:t.status})),
+            opens.length? opens.map(n=>React.createElement('div',{key:n.id,style:{display:'flex',gap:8,alignItems:'center',padding:'5px 0',fontSize:13}},
+              React.createElement('div',{className:'box',style:{width:16,height:16},onClick:()=>A.toggleNextStep(t,n.id)}),
+              React.createElement('span',{style:{flex:1}}, n.text),
+              n.dueDate&&React.createElement('span',{className:'tiny muted'}, fmtDateShort(n.dueDate))))
+              : React.createElement('div',{className:'banner',style:{margin:'6px 0',padding:'7px 10px'}},'No next step \u2014 add one below'),
+            React.createElement(QuickAdd,{task:t}));
+        }) : React.createElement('div',{className:'muted tiny',style:{padding:8}},'No open tasks assigned to you.'))));
+}
+function QuickAdd({task}){
+  const { A } = useGtm(); const [v,setV]=useState('');
+  return React.createElement('div',{style:{display:'flex',gap:6,marginTop:6}},
+    React.createElement('input',{className:'inp',style:{fontSize:13,padding:'6px 9px'},placeholder:'Quick next step\u2026',value:v,onChange:e=>setV(e.target.value),onKeyDown:e=>{if(e.key==='Enter'&&v.trim()){A.addNextStep(task,v.trim(),'');setV('');}}}),
+    React.createElement('button',{className:'btn sm primary',onClick:()=>{if(v.trim()){A.addNextStep(task,v.trim(),'');setV('');}}},'Add'));
+}
+
+/* ---------------- Audit (GM dashboard) ---------------- */
+function AuditList({title, items, render, tone}){
+  if(!items.length) return null;
+  return React.createElement('div',{className:'card',style:{padding:'14px 16px',marginBottom:14}},
+    React.createElement('div',{className:'section-title',style:{display:'flex',alignItems:'center',gap:8}}, title, React.createElement('span',{className:'pill-s '+(tone||'s-grey')}, items.length)),
+    React.createElement('div',null, items.map(render)));
+}
+function AuditView(){
+  const { projects, tasks, maps, okrs } = useGtm();
+  const nav=useNav();
+  const activeP=projects.filter(p=>p.status!=='done');
+  const overdueProjects=activeP.filter(p=>isOverdue(p.dueDate,p.status));
+  const overdueTasks=tasks.filter(t=>isOverdue(t.dueDate,t.status));
+  const noStep=tasks.filter(t=>t.status!=='done' && (t.nextSteps||[]).filter(n=>!n.done).length===0);
+  const staleP=activeP.filter(p=>isStale(p.lastActivity,p.status));
+  const staleT=tasks.filter(t=>t.status!=='done' && isStale(t.lastActivity,t.status));
+  const blockedP=activeP.filter(p=>p.status==='blocked');
+  const blockedT=tasks.filter(t=>t.status==='blocked');
+  const hc={on_track:0,at_risk:0,off_track:0}; activeP.forEach(p=>{hc[p.health]=(hc[p.health]||0)+1;});
+  const projRow=(p)=>React.createElement('div',{key:p.id,style:{display:'flex',gap:10,alignItems:'center',padding:'8px 0',borderBottom:'1px dashed var(--line)',cursor:'pointer'},onClick:()=>nav.openProject(p.id)},
+    React.createElement(HealthDot,{value:p.health}), React.createElement('span',{style:{flex:1,fontWeight:550}}, p.name),
+    React.createElement('span',{className:'tiny muted'}, maps.person[p.ownerId]?maps.person[p.ownerId].name.split(' ')[0]:'\u2014'),
+    React.createElement(DueTag,{date:p.dueDate,status:p.status}));
+  const taskRow=(t)=>React.createElement('div',{key:t.id,style:{display:'flex',gap:10,alignItems:'center',padding:'8px 0',borderBottom:'1px dashed var(--line)',cursor:'pointer'},onClick:()=>nav.openTask(t.id)},
+    React.createElement('span',{style:{flex:1,fontWeight:550}}, t.title),
+    React.createElement(AvatarStack,{ids:t.ownerIds,map:maps.person}),
+    React.createElement(DueTag,{date:t.dueDate,status:t.status}));
+  const blockedRow=(x,isTask)=>React.createElement('div',{key:x.id,style:{padding:'9px 0',borderBottom:'1px dashed var(--line)',cursor:'pointer'},onClick:()=>isTask?nav.openTask(x.id):nav.openProject(x.id)},
+    React.createElement('div',{style:{fontWeight:600,display:'flex',gap:8,alignItems:'center'}}, React.createElement('span',null,'\u26d4'), isTask?x.title:x.name),
+    x.blocker&&React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginLeft:22,marginTop:2}}, x.blocker));
+  const staleRow=(x,isTask)=>React.createElement('div',{key:x.id,style:{display:'flex',gap:10,alignItems:'center',padding:'8px 0',borderBottom:'1px dashed var(--line)',cursor:'pointer'},onClick:()=>isTask?nav.openTask(x.id):nav.openProject(x.id)},
+    React.createElement('span',{style:{flex:1,fontWeight:550}}, isTask?x.title:x.name),
+    React.createElement('span',{className:'tag-due over tiny'}, 'no update in '+Math.floor((Date.now()-new Date(x.lastActivity).getTime())/86400000)+'d'));
+  return React.createElement('div',null,
+    React.createElement('div',{className:'banner info',style:{marginBottom:16}},'\uD83E\uDDED Manage by exception. These lenses surface only what needs you. An empty list is a good sign.'),
+    React.createElement('div',{className:'grid',style:{gridTemplateColumns:'repeat(5,1fr)',marginBottom:18}},
+      React.createElement(StatCard,{n:overdueProjects.length+overdueTasks.length,label:'Overdue',tone:(overdueProjects.length+overdueTasks.length)?'alert':null}),
+      React.createElement(StatCard,{n:noStep.length,label:'No next step',tone:noStep.length?'warn':null}),
+      React.createElement(StatCard,{n:staleP.length+staleT.length,label:'Stale (7d+)',tone:(staleP.length+staleT.length)?'warn':null}),
+      React.createElement(StatCard,{n:blockedP.length+blockedT.length,label:'Blocked',tone:(blockedP.length+blockedT.length)?'alert':null}),
+      React.createElement(StatCard,{n:hc.off_track,label:'Off track',tone:hc.off_track?'alert':null})),
+    (overdueProjects.length+overdueTasks.length+noStep.length+staleP.length+staleT.length+blockedP.length+blockedT.length)===0 &&
+      React.createElement('div',{className:'empty card',style:{padding:40}}, React.createElement('div',{className:'big'},'\u2705'), 'Nothing needs your attention right now. Everything is current, owned, and moving.'),
+    React.createElement(AuditList,{title:'Overdue projects',items:overdueProjects,render:projRow,tone:'s-red'}),
+    React.createElement(AuditList,{title:'Overdue tasks',items:overdueTasks,render:taskRow,tone:'s-red'}),
+    React.createElement(AuditList,{title:'Active tasks with no open next step',items:noStep,render:taskRow,tone:'s-amber'}),
+    React.createElement(AuditList,{title:'Blocked work',items:[...blockedP.map(p=>({x:p,t:false})),...blockedT.map(t=>({x:t,t:true}))],render:(o)=>blockedRow(o.x,o.t),tone:'s-red'}),
+    React.createElement(AuditList,{title:'Stale - no update in 7+ days',items:[...staleP.map(p=>({x:p,t:false})),...staleT.map(t=>({x:t,t:true}))],render:(o)=>staleRow(o.x,o.t),tone:'s-amber'}));
+}
+
+/* ---------------- Team ---------------- */
+function PersonGradeModal({person, projects, tasks, events, onClose}){
+  const g=gradeFor(person.id, projects, tasks, events);
+  const ids=new Set([...projects.filter(p=>p.ownerId===person.id),...tasks.filter(t=>(t.ownerIds||[]).includes(person.id))].map(x=>x.id));
+  const log=(events||[]).filter(e=>ids.has(e.entityId)).sort((a,b)=>String(b.ts).localeCompare(String(a.ts))).slice(0,20);
+  const row=(label,val,bad)=>React.createElement('div',{className:'spread',style:{padding:'7px 0',borderBottom:'1px solid var(--line)'}},
+    React.createElement('span',{className:'muted',style:{fontSize:13}},label),
+    React.createElement('span',{style:{fontWeight:700,color:bad?'var(--red)':'var(--ink)'}}, val));
+  const evLine=(e)=>{
+    if(e.type==='date_change'){ const push=e.meta.dir==='push';
+      return React.createElement('div',{key:e.id,style:{padding:'8px 0',borderBottom:'1px dashed var(--line)'}},
+        React.createElement('div',{style:{fontSize:13,fontWeight:600,color:push?'var(--red)':'var(--ink-soft)'}},
+          (push?'\u23eb Pushed':'\u23ea Pulled in')+' \u00b7 '+(e.meta.name||e.entityType)),
+        React.createElement('div',{className:'tiny muted',style:{marginTop:2}}, fmtDateShort(e.meta.from)+' \u2192 '+fmtDateShort(e.meta.to)+'  ('+(push?'+':'-')+e.meta.days+'d) \u00b7 '+relTime(e.ts)));
+    }
+    if(e.type==='completed'){ return React.createElement('div',{key:e.id,style:{padding:'8px 0',borderBottom:'1px dashed var(--line)'}},
+      React.createElement('div',{style:{fontSize:13,fontWeight:600,color:e.meta.onTime?'var(--green)':'var(--red)'}}, (e.meta.onTime?'\u2713 Completed on time':'\u2715 Completed late')+' \u00b7 '+(e.meta.name||e.entityType)),
+      React.createElement('div',{className:'tiny muted',style:{marginTop:2}}, relTime(e.ts))); }
+    return React.createElement('div',{key:e.id,style:{padding:'8px 0',borderBottom:'1px dashed var(--line)'}},
+      React.createElement('div',{style:{fontSize:13}}, (e.type==='next_step_done'?'Next step done':e.type)+' \u00b7 '+(e.meta.name||'')),
+      React.createElement('div',{className:'tiny muted',style:{marginTop:2}}, relTime(e.ts)));
+  };
+  return React.createElement(Modal,{title:person.name+' \u2014 accountability',onClose,wide:true},
+    React.createElement('div',{style:{display:'flex',gap:16,alignItems:'center',marginBottom:16}},
+      React.createElement(GradeBadge,{letter:g.grade,size:62}),
+      React.createElement('div',null,
+        React.createElement('div',{style:{fontWeight:800,fontSize:18}}, g.na?'No owned work yet':'Grade '+g.grade),
+        React.createElement('div',{className:'muted',style:{fontSize:13}}, g.na?'Assign projects or tasks to start grading.':'Measures date reliability, update discipline, and integrity of commitments.'))),
+    !g.na && React.createElement('div',{style:{marginBottom:18}},
+      row('Currently overdue', g.overdue, g.overdue>0),
+      row('Stale / no next step', g.hygiene, g.hygiene>0),
+      row('Late completions (90d)', g.late, g.late>0),
+      row('Deadlines pushed out (90d)', g.pushCount+(g.pushDays?'  ('+g.pushDays+' days total)':''), g.pushCount>0)),
+    React.createElement('div',{className:'note',style:{marginBottom:16,fontSize:12.5}}, 'Pushing a due date out counts against this grade even if the new date is met - the more a deadline moves, the worse it gets. Pulling a date earlier is free. One honest slip won\u2019t drop you; a pattern will.'),
+    React.createElement('div',{className:'section-title'},'Date & completion audit log'),
+    log.length? log.map(evLine) : React.createElement('div',{className:'muted tiny',style:{padding:'8px 0'}},'No date moves or completions recorded yet.'));
+}
+function TeamView(){
+  const { people, projects, tasks, events, A } = useGtm();
+  const [edit,setEdit]=useState(null); const [add,setAdd]=useState(false); const [del,setDel]=useState(null); const [grade,setGrade]=useState(null);
+  return React.createElement('div',null,
+    React.createElement('div',{className:'spread',style:{marginBottom:16}},
+      React.createElement('div',{className:'muted',style:{fontSize:13}}, people.length+' people \u00b7 grades update as the team works'),
+      React.createElement('button',{className:'btn primary',onClick:()=>setAdd(true)},'+ Add person')),
+    React.createElement('div',{className:'grid',style:{gridTemplateColumns:'repeat(auto-fill,minmax(300px,1fr))'}},
+      people.map(p=>{
+        const pc=projects.filter(x=>x.ownerId===p.id).length; const tc=tasks.filter(x=>(x.ownerIds||[]).includes(p.id)).length;
+        const g=gradeFor(p.id, projects, tasks, events);
+        return React.createElement('div',{key:p.id,className:'card',style:{padding:'16px 18px'}},
+          React.createElement('div',{style:{display:'flex',gap:13,alignItems:'center'}},
+            React.createElement(Avatar,{person:p,size:'xl'}),
+            React.createElement('div',{style:{flex:1,minWidth:0}}, React.createElement('div',{style:{fontWeight:700,fontSize:15}}, p.name), React.createElement('div',{className:'muted',style:{fontSize:12.5}}, p.role)),
+            React.createElement('button',{className:'btn sm icon',onClick:()=>setEdit(p)},'\u270e')),
+          React.createElement('div',{style:{display:'flex',alignItems:'center',gap:13,marginTop:14,padding:'12px',background:'var(--panel-2)',border:'1px solid var(--line)',borderRadius:10,cursor:'pointer'},onClick:()=>setGrade(p)},
+            React.createElement(GradeBadge,{letter:g.grade,size:44}),
+            React.createElement('div',{style:{flex:1,minWidth:0}},
+              React.createElement('div',{style:{fontWeight:700,fontSize:13}}, g.na?'No owned work yet':'Accountability grade'),
+              React.createElement('div',{className:'tiny muted',style:{marginTop:1}}, g.na?'\u2014':((g.overdue?g.overdue+' overdue \u00b7 ':'')+(g.pushCount?g.pushCount+' date push'+(g.pushCount>1?'es':'')+' \u00b7 ':'')+(g.hygiene?g.hygiene+' need a next step':((!g.overdue&&!g.pushCount)?'clean':'on track'))))),
+            React.createElement('span',{className:'linkish tiny'},'details \u203a')),
+          React.createElement('div',{className:'tiny muted',style:{marginTop:12,display:'flex',gap:16}}, React.createElement('span',null, React.createElement('b',{style:{color:'var(--ink)'}},pc),' projects'), React.createElement('span',null, React.createElement('b',{style:{color:'var(--ink)'}},tc),' tasks')),
+          React.createElement('div',{style:{marginTop:10}}, React.createElement('button',{className:'btn sm danger',onClick:()=>setDel(p)},'Remove')));
+      })),
+    add && React.createElement(PersonForm,{onClose:()=>setAdd(false),onSave:A.savePerson}),
+    edit && React.createElement(PersonForm,{initial:edit,onClose:()=>setEdit(null),onSave:A.savePerson}),
+    grade && React.createElement(PersonGradeModal,{person:grade,projects,tasks,events,onClose:()=>setGrade(null)}),
+    del && React.createElement(Confirm,{text:'Remove '+del.name+'? They will be unassigned from their projects and tasks.',danger:true,onClose:()=>setDel(null),onConfirm:()=>A.deletePerson(del.id)}));
+}
+/* ---------------- Setup / Auth screens ---------------- */
+function parseConfig(raw){
+  let s=(raw||'').trim(); const i=s.indexOf('{'); const j=s.lastIndexOf('}');
+  if(i<0||j<0) return null; s=s.slice(i,j+1);
+  try{ return JSON.parse(s); }catch(e){}
+  try{ return (new Function('return ('+s+')'))(); }catch(e){}
+  return null;
+}
+const DB_RULES = '{\n  "rules": {\n    ".read": "auth != null",\n    ".write": "auth != null"\n  }\n}';
+
+function SetupScreen({onClose}){
+  const [raw,setRaw]=useState(''); const [err,setErr]=useState('');
+  const connect=()=>{
+    const cfg=parseConfig(raw);
+    if(!cfg || !cfg.apiKey || !cfg.databaseURL){ setErr('Could not read a valid config. Make sure it includes apiKey and databaseURL.'); return; }
+    try{ localStorage.setItem(LS_CFG, JSON.stringify(cfg)); location.reload(); }catch(e){ setErr('Could not save config in this browser.'); }
+  };
+  const step=(h,b)=>React.createElement('div',{className:'step'}, React.createElement('div',{className:'num'}), React.createElement('div',null, React.createElement('h4',null,h), React.createElement('div',{className:'muted',style:{fontSize:13}}, b)));
+  return React.createElement('div',{className:'scrim',style:{overflow:'auto',alignItems:'flex-start'},onMouseDown:e=>{if(e.target===e.currentTarget&&onClose)onClose();}},
+    React.createElement('div',{className:'modal',style:{width:'min(760px,96vw)',margin:'30px auto'}},
+      React.createElement('div',{className:'mh'}, React.createElement('h3',null,'Connect your live team database'), onClose&&React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
+      React.createElement('div',{className:'mb'},
+        React.createElement('div',{className:'banner info',style:{marginBottom:16}}, 'One-time setup, about 5 minutes. After this, everyone who opens the site sees each other\u2019s edits live. It is free on Firebase\u2019s Spark plan.'),
+        React.createElement('div',{className:'steps'},
+          step('Create a Firebase project','Go to console.firebase.google.com, click Add project, name it (e.g. moego-gtm), accept defaults. You can skip Google Analytics.'),
+          step('Add a Web app','In the project, click the </> (Web) icon. Give it a nickname. Firebase shows you a firebaseConfig object - keep that tab open, you will paste it below.'),
+          step('Turn on Realtime Database','Left menu > Build > Realtime Database > Create Database. Pick a location, start in test mode (you will lock it down in step 5).'),
+          step('Turn on Google sign-in','Left menu > Build > Authentication > Get started > Sign-in method > enable Google. Under Settings > Authorized domains, add your GitHub Pages domain (e.g. yourname.github.io).'),
+          step('Lock the database to signed-in users','Realtime Database > Rules tab, paste the rules below, Publish. Only signed-in people can read or write.')),
+        React.createElement('div',{className:'code'}, DB_RULES),
+        React.createElement('div',{className:'divider'}),
+        React.createElement(Field,{label:'Paste your firebaseConfig here',hint:'the whole { ... } block'}, React.createElement('textarea',{className:'inp',style:{minHeight:130,fontFamily:'ui-monospace,Menlo,monospace',fontSize:12},placeholder:'{\n  apiKey: "...",\n  authDomain: "...",\n  databaseURL: "https://...firebasedatabase.app",\n  projectId: "...",\n  appId: "..."\n}',value:raw,onChange:e=>setRaw(e.target.value)})),
+        err&&React.createElement('div',{className:'flag',style:{marginTop:6}}, err),
+        React.createElement('div',{className:'muted tiny',style:{marginTop:10}}, 'For a permanent shared deploy, paste this same config into the FIREBASE_CONFIG block at the top of index.html and commit it - then everyone gets it automatically. Pasting here connects just this browser, which is perfect for testing.')),
+      React.createElement('div',{className:'mf'}, onClose&&React.createElement('button',{className:'btn',onClick:onClose},'Later'), React.createElement('button',{className:'btn primary',onClick:connect},'Connect this browser'))));
+}
+
+function AuthScreen(){
+  const { signIn } = useStore(); const [setup,setSetup]=useState(false);
+  return React.createElement('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(135deg,#001628,#013a5e)'}},
+    React.createElement('div',{className:'card',style:{padding:'34px 32px',width:'min(420px,92vw)',textAlign:'center'}},
+      React.createElement('div',{className:'logo',style:{width:46,height:46,borderRadius:12,background:'linear-gradient(135deg,#88d0ec,#013a5e)',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:800,color:'#fff',fontSize:20,margin:'0 auto 14px'}},'M'),
+      React.createElement('h2',{style:{margin:'0 0 4px',letterSpacing:'-.4px'}},'MoeGo GTM OS'),
+      React.createElement('p',{className:'muted',style:{fontSize:13,marginTop:0}},'Sign in to see the live, shared plan.'),
+      React.createElement('button',{className:'btn primary',style:{width:'100%',justifyContent:'center',padding:'11px',marginTop:10},onClick:signIn},'Continue with Google'),
+      React.createElement('div',{className:'linkish tiny',style:{marginTop:16},onClick:()=>setSetup(true)},'Set up / change the team database'),
+      setup&&React.createElement(SetupScreen,{onClose:()=>setSetup(false)})));
+}
+function DeniedScreen(){
+  const { user, signOut } = useStore();
+  return React.createElement('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#001628'}},
+    React.createElement('div',{className:'card',style:{padding:'32px',width:'min(420px,92vw)',textAlign:'center'}},
+      React.createElement('div',{style:{fontSize:34,marginBottom:8}},'\uD83D\uDD12'),
+      React.createElement('h3',{style:{marginTop:0}},'Access not enabled'),
+      React.createElement('p',{className:'muted',style:{fontSize:13}}, (user&&user.email||'This account')+' is not on the allowlist for this workspace. Ask Kev to add you, then sign in again.'),
+      React.createElement('button',{className:'btn',onClick:signOut},'Sign out')));
+}
+/* ---------------- Drawer host ---------------- */
+function DrawerHost({drawer}){
+  const { maps } = useGtm();
+  if(!drawer) return null;
+  let content=null;
+  if(drawer.type==='project'){ const p=maps.project[drawer.id]; content=p?React.createElement(ProjectDrawer,{project:p}):null; }
+  else if(drawer.type==='task'){ const t=maps.task[drawer.id]; content=t?React.createElement(TaskDrawer,{task:t}):null; }
+  const nav=useNav();
+  if(!content){ return null; }
+  return React.createElement(React.Fragment,null,
+    React.createElement('div',{className:'drawer-scrim',onClick:nav.closeDrawer}), content);
+}
+
+/* ---------------- App shell ---------------- */
+const NAV=[
+  {id:'exec',label:'Exec Summary',ic:'\u25C9'},
+  {id:'okrs',label:'Objectives',ic:'\u25CE'},
+  {id:'projects',label:'Projects',ic:'\u25A4'},
+  {id:'mywork',label:'My Work',ic:'\u2713'},
+  {id:'audit',label:'Audit',ic:'\u26A0'},
+  {id:'team',label:'Team',ic:'\u25CB'},
+];
+const TITLES={exec:['Exec Summary','Every objective, who owns it, and whether it is on track'],okrs:['Objectives','Your goals, success criteria, and the work beneath them'],projects:['Projects','Every project, filterable and sortable'],mywork:['My Work','What you own, and your next moves'],audit:['Audit','What needs your attention, by exception'],team:['Team','Who is on the GTM team']};
+
+function GlobalSearch({nav,setView}){
+  const { okrs, projects, tasks } = useGtm();
+  const [q,setQ]=useState(''); const [focus,setFocus]=useState(false);
+  const ql=q.trim().toLowerCase();
+  const res=useMemo(()=>{
+    if(!ql) return null;
+    const inc=(s)=>String(s||'').toLowerCase().includes(ql);
+    const oo=okrs.filter(o=>inc(o.theme)||inc(o.objective)||(o.successCriteria||[]).some(inc)).slice(0,6);
+    const pp=projects.filter(p=>inc(p.name)||inc(p.outcome)||inc(p.details)).slice(0,8);
+    const tt=tasks.filter(t=>inc(t.title)||(t.nextSteps||[]).some(n=>inc(n.text))).slice(0,8);
+    return {oo,pp,tt,total:oo.length+pp.length+tt.length};
+  },[ql,okrs,projects,tasks]);
+  const go=(fn)=>{ fn(); setQ(''); setFocus(false); };
+  return React.createElement('div',{className:'search-wrap'},
+    React.createElement('span',{className:'search-ic'},'\uD83D\uDD0D'),
+    React.createElement('input',{className:'search-inp',placeholder:'Search objectives, projects, tasks\u2026',value:q,onChange:e=>setQ(e.target.value),onFocus:()=>setFocus(true),onBlur:()=>setTimeout(()=>setFocus(false),160),onKeyDown:e=>{if(e.key==='Escape'){setQ('');e.target.blur();}}}),
+    focus && ql && res && React.createElement('div',{className:'search-pop'},
+      res.total===0 && React.createElement('div',{className:'search-empty'},'No matches for \u201c'+q+'\u201d'),
+      res.oo.length>0 && React.createElement('div',null, React.createElement('div',{className:'search-grp'},'Objectives'),
+        res.oo.map(o=>React.createElement('div',{key:o.id,className:'search-item',onMouseDown:()=>go(()=>setView('okrs'))},
+          React.createElement('span',{className:'pill-s s-navy'},'O'+o.num),
+          React.createElement('span',{className:'si-t'}, o.theme),
+          React.createElement('span',{className:'si-k'},'Objective')))),
+      res.pp.length>0 && React.createElement('div',null, React.createElement('div',{className:'search-grp'},'Projects'),
+        res.pp.map(p=>React.createElement('div',{key:p.id,className:'search-item',onMouseDown:()=>go(()=>nav.openProject(p.id))},
+          React.createElement(HealthDot,{value:p.health}),
+          React.createElement('span',{className:'si-t'}, p.name),
+          React.createElement('span',{className:'si-k'},'Project')))),
+      res.tt.length>0 && React.createElement('div',null, React.createElement('div',{className:'search-grp'},'Tasks'),
+        res.tt.map(t=>React.createElement('div',{key:t.id,className:'search-item',onMouseDown:()=>go(()=>nav.openTask(t.id))},
+          React.createElement('span',{style:{color:'var(--muted-2)',width:21,textAlign:'center'}},'\u2713'),
+          React.createElement('span',{className:'si-t'}, t.title),
+          React.createElement('span',{className:'si-k'},'Task'))))
+    ));
+}
+function App(){
+  const g = useGtm();
+  const { mode, sync, toast, state, importData, resetSeed } = g;
+  const [view,setView]=useState('exec');
+  const [drawer,setDrawer]=useState(null);
+  const [sideOpen,setSideOpen]=useState(false);
+  const [showSetup,setShowSetup]=useState(false);
+  const [collapse,setCollapse]=useState({n:0,expand:false});
+  const fileRef=useRef(null);
+
+  const nav={ openProject:(id)=>setDrawer({type:'project',id}), openTask:(id,from)=>setDrawer({type:'task',id,from}), closeDrawer:()=>setDrawer(null), go:(v)=>{setView(v);setSideOpen(false);}, drawer };
+
+  if(mode==='boot') return React.createElement('div',{style:{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center'}}, React.createElement('div',{className:'muted'},'Loading\u2026'));
+  if(mode==='auth') return React.createElement(AuthScreen);
+  if(mode==='denied') return React.createElement(DeniedScreen);
+
+  const badge = g.projects.filter(p=>isOverdue(p.dueDate,p.status)).length + g.tasks.filter(t=>isOverdue(t.dueDate,t.status)).length + g.tasks.filter(t=>t.status!=='done'&&(t.nextSteps||[]).filter(n=>!n.done).length===0).length;
+
+  const exportJSON=()=>{
+    const data={meta:state.meta,people:state.people,okrs:state.okrs,projects:state.projects,tasks:state.tasks};
+    const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='moego-gtm-os-'+todayStr()+'.json'; a.click();
+  };
+  const onImport=(e)=>{ const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=()=>{ try{ importData(JSON.parse(r.result)); }catch(err){ alert('Could not read that file.'); } }; r.readAsText(f); e.target.value=''; };
+
+  const syncPill = sync==='live'?{c:'var(--green)',t:'Live - synced'} : sync==='connecting'?{c:'var(--amber)',t:'Connecting\u2026'} : sync==='error'?{c:'var(--red)',t:'Sync error'} : {c:'var(--grey)',t:'Local only'};
+  const [tt,sub]=TITLES[view];
+
+  return React.createElement(NavCtx.Provider,{value:nav},
+    React.createElement(CollapseCtx.Provider,{value:collapse},
+    React.createElement('div',{className:'app'},
+      React.createElement('div',{className:'side'+(sideOpen?' open':'')},
+        React.createElement('div',{className:'brand'}, React.createElement('div',{className:'logo'},'M'), React.createElement('div',null, React.createElement('b',null,'GTM OS'))),
+        React.createElement('div',{className:'nav'},
+          React.createElement('div',{className:'grp'},'Workspace'),
+          NAV.map(n=>React.createElement('a',{key:n.id,className:view===n.id?'on':'',onClick:()=>{setView(n.id);setSideOpen(false);}}, React.createElement('span',{className:'ic'},n.ic), n.label, n.id==='audit'&&badge>0&&React.createElement('span',{className:'badge'},badge)))),
+        React.createElement('div',{className:'who'}, React.createElement('div',{className:'meta',style:{flex:1}}, React.createElement('b',null, mode==='cloud'?(g.user&&g.user.displayName||'Signed in'):'Local mode'), React.createElement('span',null, mode==='cloud'?(g.user&&g.user.email||''):'this device only')), mode==='cloud'&&React.createElement('button',{onClick:g.signOut},'Sign out'))),
+      React.createElement('div',{className:'main'},
+        React.createElement('div',{className:'top'},
+          React.createElement('div',{className:'top-row'},
+            React.createElement('button',{className:'menu-btn',onClick:()=>setSideOpen(o=>!o)},'\u2630'),
+            React.createElement('div',null, React.createElement('h1',null,tt), React.createElement('div',{className:'sub'},sub)),
+            React.createElement('div',{className:'sync'},
+              (view==='exec'||view==='okrs') && React.createElement('button',{className:'btn sm',title:'Expand every card',onClick:()=>setCollapse(c=>({n:c.n+1,expand:true}))},'\u25be Expand all'),
+              (view==='exec'||view==='okrs') && React.createElement('button',{className:'btn sm',title:'Collapse every open card',onClick:()=>setCollapse(c=>({n:c.n+1,expand:false}))},'\u25b4 Collapse all'),
+              React.createElement('span',{className:'pill'}, React.createElement('span',{className:'dot',style:{background:syncPill.c}}), syncPill.t),
+              React.createElement('button',{className:'btn sm icon',title:'Export JSON backup',onClick:exportJSON},'\u2913'),
+              React.createElement('button',{className:'btn sm icon',title:'Import JSON',onClick:()=>fileRef.current.click()},'\u2912'),
+              React.createElement('input',{type:'file',accept:'application/json',ref:fileRef,style:{display:'none'},onChange:onImport}))),
+          React.createElement(GlobalSearch,{nav:nav,setView:setView})),
+        mode==='local' && React.createElement('div',{style:{padding:'0 26px',marginTop:14}}, React.createElement('div',{className:'banner'}, '\u26a1 Local-only mode - changes save to this browser and are not shared. ', React.createElement('button',{className:'btn sm primary',style:{marginLeft:'auto'},onClick:()=>setShowSetup(true)},'Connect team database'))),
+        React.createElement('div',{className:'content'},
+          view==='exec'&&React.createElement(ExecSummary),
+          view==='okrs'&&React.createElement(OkrsView),
+          view==='projects'&&React.createElement(ProjectsView),
+          view==='mywork'&&React.createElement(MyWorkView),
+          view==='audit'&&React.createElement(AuditView),
+          view==='team'&&React.createElement(TeamView))),
+      React.createElement(DrawerHost,{drawer}),
+      showSetup&&React.createElement(SetupScreen,{onClose:()=>setShowSetup(false)}),
+      toast&&React.createElement('div',{style:{position:'fixed',bottom:22,left:'50%',transform:'translateX(-50%)',background:'var(--navy)',color:'#fff',padding:'10px 18px',borderRadius:10,boxShadow:'var(--shadow-lg)',zIndex:90,fontSize:13,fontWeight:600}}, toast))));
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(StoreProvider,null,React.createElement(App)));
+</script>
+</body>
+</html>
