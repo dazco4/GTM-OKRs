@@ -908,7 +908,18 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .agent-btn::after{content:'';position:absolute;inset:-4px;border-radius:999px;background:conic-gradient(from var(--agent-a),rgba(92,191,189,.9) 0deg,rgba(139,124,246,.85) 60deg,rgba(3,36,60,.5) 120deg,rgba(3,36,60,0) 200deg,rgba(92,191,189,0) 330deg,rgba(92,191,189,.9) 360deg);filter:blur(8px);opacity:.7;z-index:-1;animation:agent-spin 2.6s linear infinite}
 .agent-btn:hover::after{opacity:1}
 .agent-btn-in{position:relative;display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:999px;background:var(--panel);color:var(--deep);font-size:12.5px;font-weight:800;letter-spacing:.01em}
-.agent-word{background:linear-gradient(95deg,#2a9d9b,#6d5ef0 55%,#03243c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.agent-word{background:linear-gradient(95deg,#2a9d9b,#6d5ef0 45%,#03243c 70%,#2a9d9b);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:agent-flow 5s linear infinite}
+.agent-word-live{animation-duration:4s}
+@keyframes agent-flow{to{background-position:-220% 0}}
+/* a living orb: the gradient turns inside, a ring travels round the outside, a soft pulse behind */
+.agent-orb-live{position:relative;width:34px;height:34px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto}
+.agent-orb-live.big{width:64px;height:64px;margin-bottom:14px}
+.agent-orb-live::before{content:'';position:absolute;inset:-3px;border-radius:50%;background:conic-gradient(from var(--agent-a),#5cbfbd 0deg,#8b7cf6 70deg,#03243c 130deg,rgba(3,36,60,.08) 200deg,rgba(92,191,189,.08) 300deg,#5cbfbd 360deg);animation:agent-spin 2.6s linear infinite}
+.agent-orb-live::after{content:'';position:absolute;inset:-10px;border-radius:50%;background:radial-gradient(circle,rgba(139,124,246,.35),rgba(92,191,189,.15) 50%,transparent 72%);animation:agent-pulse 2.8s ease-in-out infinite;z-index:-1}
+.agent-orb-core{position:relative;width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:conic-gradient(from calc(var(--agent-a) * -1),#5cbfbd,#6d5ef0,#03243c,#6d5ef0,#5cbfbd);animation:agent-spin 6s linear infinite;box-shadow:inset 0 0 0 2px var(--panel)}
+.agent-orb-core svg{stroke:#fff;filter:drop-shadow(0 0 4px rgba(255,255,255,.7))}
+@keyframes agent-pulse{0%,100%{transform:scale(.92);opacity:.6}50%{transform:scale(1.08);opacity:1}}
+@media (prefers-reduced-motion:reduce){.agent-word,.agent-orb-live::before,.agent-orb-live::after,.agent-orb-core{animation:none}}
 .agent-btn-in svg{stroke:url(#agentGrad)}
 .agent-btn-in svg path:first-of-type{fill:url(#agentGrad);fill-opacity:.22}
 .dtab-ask svg path:first-of-type{fill:url(#agentGrad);fill-opacity:.22}
@@ -916,7 +927,25 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .agent-orb{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#5cbfbd,#6d5ef0 60%,#03243c);box-shadow:0 0 0 4px rgba(109,94,240,.12);flex:0 0 auto}
 @keyframes agent-spin{to{--agent-a:360deg}}
 @media (prefers-reduced-motion:reduce){.agent-btn::before,.agent-btn::after{animation:none}}
-.drawer.agent{width:min(680px,94vw);z-index:86}
+.drawer.agent{width:min(860px,94vw);z-index:86;background:linear-gradient(180deg,#fbfbfe 0%,var(--panel) 220px)}
+.drawer.agent .agent-h{background:linear-gradient(90deg,rgba(92,191,189,.10),rgba(139,124,246,.10) 55%,rgba(3,36,60,.04))}
+.drawer.agent .chat-composer{background:linear-gradient(180deg,#fff,#f7f6fe);border-top:1px solid #e3e0fa}
+.drawer.agent .chat-composer textarea{border-color:#d9d4fb}
+.drawer.agent .chat-composer textarea:focus{border-color:#8b7cf6;box-shadow:0 0 0 3px rgba(139,124,246,.15)}
+.agent-empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:36px 20px 10px}
+.agent-empty-orb{width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#5cbfbd,#6d5ef0 60%,#03243c);box-shadow:0 10px 30px rgba(109,94,240,.28),0 0 0 8px rgba(109,94,240,.08);margin-bottom:14px}
+.agent-empty-h{font-size:22px;font-weight:800;margin-bottom:6px}
+.agent-empty-sub{font-size:13.5px;color:var(--ink-2);max-width:520px;line-height:1.5;margin-bottom:22px}
+.agent-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;width:100%;max-width:720px;text-align:left}
+.agent-card{border:1px solid #e3e0fa;background:#fff;border-radius:12px;padding:12px 14px;cursor:pointer;transition:transform .12s,box-shadow .12s,border-color .12s}
+.agent-card:hover{border-color:#8b7cf6;box-shadow:0 8px 24px rgba(109,94,240,.14);transform:translateY(-1px)}
+.agent-card-l{font-weight:800;font-size:13.5px;color:var(--deep);margin-bottom:3px}
+.agent-card-p{font-size:12.5px;color:var(--ink-2);line-height:1.45}
+.starter{border-color:#e3e0fa}
+.agent-ask{border:none;border-radius:999px;padding:9px 18px;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(95deg,#2a9d9b,#6d5ef0 55%,#03243c);display:inline-flex;align-items:center;gap:7px;cursor:pointer;box-shadow:0 6px 18px rgba(109,94,240,.25)}
+.agent-ask:hover{filter:brightness(1.06)}.agent-ask:disabled{opacity:.45;cursor:default;box-shadow:none}
+.agent-ask svg{stroke:#fff}
+.take-a{border-left:3px solid transparent;border-image:linear-gradient(180deg,#5cbfbd,#8b7cf6,#03243c) 1;padding-left:12px}
 .drawer.agent .chat{flex:1;min-height:0}
 .take{margin:10px 0 14px}
 .take-q{font-weight:700;font-size:13.5px;color:var(--ink);background:#eef2f6;border-radius:10px 10px 10px 2px;padding:8px 12px;display:inline-block;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -5058,13 +5087,17 @@ function cirriSnapshot(g, H, PM, W, opts){
   const people=g.people||[]; const emps=(H&&H.employees)||[]; const byPerson={}; people.forEach(p=>{ byPerson[p.id]=p; });
   const lbl={}; ((H&&H.effLeaders)||[]).forEach(l=>{ lbl[l.id]=l.label; });
   const projects=g.projects||[], tasks=g.tasks||[], okrs=g.okrs||[], comments=g.comments||[], events=g.events||[], checkins=g.checkins||[];
+  const notes=g.notes||[], approvals=opts.approvals||[], sessions=opts.sessions||[]; const canComp=opts.canComp||(()=>false);
   const daysBetween=(a,b)=>Math.round((new Date(b).getTime()-new Date(a).getTime())/86400000);
   const pushes={}; events.forEach(e=>{ if(e.type==='date_change') pushes[e.entityId]=(pushes[e.entityId]||0)+1; });
   const since90=new Date(now-90*86400000).toISOString();
   /* per project */
   const projOut=projects.map(p=>{ const T=tasks.filter(t=>(t.projectIds||[]).includes(p.id)); const open=T.filter(t=>t.status!=='done'&&t.status!=='abandoned');
     const ci=checkinFor(checkins,p.id,week); const lastCi=(checkins||[]).filter(c=>c.projectId===p.id).sort((a,b)=>String(b.week).localeCompare(String(a.week)))[0]||null;
+    const pn=notes.filter(n=>n.entityType==='project'&&n.entityId===p.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
+    const hist=events.filter(e=>e.entityId===p.id).sort((a,b)=>String(b.ts||b.at||'').localeCompare(String(a.ts||a.at||''))).slice(0,6).map(e=>({at:String(e.ts||e.at||'').slice(0,10),type:e.type,from:(e.meta||{}).from,to:(e.meta||{}).to}));
     return {id:p.id, name:p.name, ownerId:p.ownerId||'', objectiveIds:p.okrIds||p.objectiveIds||[], queue:isActiveProj(p)?'active':(isClosedStatus(p.status)?'closed':'queued'), status:p.status, health:p.health||'', dueDate:p.dueDate||'',
+      description:String(p.details||p.description||'').slice(0,240), notesCount:pn.length, latestNote: pn[0]? {at:pn[0].updatedAt||pn[0].createdAt, by:pn[0].authorId, text:String(pn[0].text||'').slice(0,300)} : null, history:hist,
       overdueDays: (p.dueDate && isActiveProj(p) && !isClosedStatus(p.status) && p.dueDate<today)? daysBetween(p.dueDate,today) : 0,
       datePushes:pushes[p.id]||0, daysSinceActivity: p.lastActivity? daysBetween(p.lastActivity.slice(0,10),today) : null, stale: isStale(p.lastActivity,p.status),
       tasksOpen:open.length, tasksDone:T.filter(t=>t.status==='done').length, tasksOverdue:open.filter(t=>t.dueDate&&t.dueDate<today).length,
@@ -5072,16 +5105,20 @@ function cirriSnapshot(g, H, PM, W, opts){
       sensitive: !!p.sensitive, impact:p.impact||'', effort:p.effort||p.loe||''}; });
   const projById={}; projOut.forEach(p=>{ projById[p.id]=p; });
   /* per task */
-  const taskOut=tasks.map(t=>({id:t.id, title:t.title, projectIds:t.projectIds||[], ownerIds:t.ownerIds||[], status:t.status, dueDate:t.dueDate||'', overdueDays:(t.dueDate&&t.status!=='done'&&t.status!=='abandoned'&&t.dueDate<today)? daysBetween(t.dueDate,today) : 0, blocker:t.blocker||'', lastActivity:t.lastActivity||t.updatedAt||'', doneAt:t.doneAt||t.completedAt||''}));
+  const taskOut=tasks.map(t=>{ const tn=notes.filter(n=>n.entityType==='task'&&n.entityId===t.id).sort((a,b)=>String(b.updatedAt||b.createdAt).localeCompare(String(a.updatedAt||a.createdAt)));
+    return {id:t.id, title:t.title, projectIds:t.projectIds||[], ownerIds:t.ownerIds||[], status:t.status, priority:t.priority||'', dueDate:t.dueDate||'', overdueDays:(t.dueDate&&t.status!=='done'&&t.status!=='abandoned'&&t.dueDate<today)? daysBetween(t.dueDate,today) : 0, blocker:t.blocker||'', nextSteps:(t.nextSteps||[]).filter(n=>!n.done).slice(0,3).map(n=>n.text), lastActivity:t.lastActivity||t.updatedAt||'', doneAt:t.doneAt||t.completedAt||'', latestNote: tn[0]? String(tn[0].text||'').slice(0,200) : ''}; });
   /* per person: facts only */
   const ownsFn=(pid)=>(et,eid)=> et==='project'? ((projById[eid]||{}).ownerId===pid) : et==='task'? ((tasks.find(x=>x.id===eid)||{}).ownerIds||[]).includes(pid) : false;
-  const peopleOut=people.map(p=>{ const e=emps.find(x=>x.id===p.id)||{}; const owned=projOut.filter(x=>x.ownerId===p.id); const active=owned.filter(x=>x.queue==='active');
+  const lastSeen={}; sessions.forEach(x=>{ const k=String(x.email||'').toLowerCase(); if(!lastSeen[k]||String(x.at)>lastSeen[k]) lastSeen[k]=x.at; });
+  const peopleOut=people.map(p=>{ const e=emps.find(x=>x.id===p.id)||{}; const owned=projOut.filter(x=>x.ownerId===p.id); const active=owned.filter(x=>x.queue==='active'); const queued=owned.filter(x=>x.queue==='queued'); const closed=owned.filter(x=>x.queue==='closed');
     const mine=taskOut.filter(t=>t.ownerIds.includes(p.id)); const openT=mine.filter(t=>t.status!=='done'&&t.status!=='abandoned');
     const done90=tasks.filter(t=>(t.ownerIds||[]).includes(p.id)&&t.status==='done'&&String(t.doneAt||t.completedAt||t.lastActivity||'')>=since90);
     const onTime=done90.filter(t=>!t.dueDate || String(t.doneAt||t.completedAt||t.lastActivity||'').slice(0,10)<=t.dueDate).length;
     const rs=replyStats(p.id, comments, ownsFn(p.id));
     return {id:p.id, name:p.name, title:e.title||e.role||'', level:e.level? hcLevelName(e.level) : '', levelRank:e.level||null, org:lbl[e.leaderId]||'', managerId:e.managerId||'', onLeave:!!e.onLeave, startDate:e.startDate||'',
-      activeProjectsOwned:active.length, projectsOwned:owned.length, openTasks:openT.length, overdueTasks:openT.filter(t=>t.overdueDays>0).length, overdueProjects:active.filter(x=>x.overdueDays>0).length,
+      activeProjectsOwned:active.length, queuedProjectsOwned:queued.length, closedProjectsOwned:closed.length, openTasks:openT.length,
+      lastInCirri: lastSeen[String(e.email||'').toLowerCase()]||'', tenureMonths: e.startDate? Math.max(0,Math.round(daysBetween(e.startDate,today)/30)) : null, country:e.country||'',
+      performance: canComp(e)? hcPerfLabel(e.performance||'') : undefined, attritionRisk: canComp(e)? (e.attrition||'') : undefined, overdueTasks:openT.filter(t=>t.overdueDays>0).length, overdueProjects:active.filter(x=>x.overdueDays>0).length,
       datePushesOnOwned:owned.reduce((n,x)=>n+x.datePushes,0), staleActiveProjects:active.filter(x=>x.stale).length, checkinsMissingThisWeek:active.filter(x=>!x.checkinThisWeek).length,
       tasksDone90d:done90.length, onTimeRate90d: done90.length? Math.round(100*onTime/done90.length) : null,
       repliesAsked:rs.asked, repliesAnswered:rs.answered, medianReplyHours: rs.medianHours==null? null : Math.round(rs.medianHours*10)/10, unansweredOver48h:rs.open.length}; });
@@ -5090,7 +5127,10 @@ function cirriSnapshot(g, H, PM, W, opts){
     return {id:o.id, name:o.name||o.title, ownerId:o.ownerId||'', target:o.target||o.targetLabel||'', health:o.health||'', criteria:crit.map(c=>({id:c.id,text:c.text,covered:covered.has(c.id)})), projectIds:ps.map(p=>p.id), activeProjects:ps.filter(p=>p.queue==='active').length}; });
   /* metrics: latest reading and goal; judgement of on/off plan is left to the reader for now */
   const metricsOut=(W&&W.metrics? W.metrics : []).map(m=>{ const es=(W.entries||[]).filter(e=>e.mid===m.id).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))); const last=es[0]||null; let goal=null; try{ goal=last? (wbrGoalInfo(m,last.pk)||{}).goal : null; }catch(e){}
-    return {id:m.id, name:m.name, section:m.sec||'', ownerId:m.ownerId||'', cadence:m.cad||'', direction:m.dir||'', latest: last? {period:last.pk, week:last.wk, value:last.v, goal} : null}; });
+    const v=last? Number(last.v) : null; const pct=(v!=null&&goal!=null&&Number(goal)!==0&&!isNaN(v))? Math.round(100*v/Number(goal)) : null;
+    return {id:m.id, name:m.name, section:m.sec||'', ownerId:m.ownerId||'', cadence:m.cad||'', goodDirection: m.dir==='down'?'lower is better':'higher is better', latest: last? {period:last.pk, week:last.wk, value:last.v, goal, pctOfGoal:pct} : null}; });
+  const approvalsOut=approvals.filter(a=>a.status==='pending').map(a=>({id:a.id, kind:a.kind, title:a.title, requestedBy:a.requestedBy, approver:a.approverEmail, at:a.createdAt||a.at||'', note:String(a.note||'').slice(0,200)}));
+  const reqsOut=emps.filter(e=>hcStatus(e)==='open').map(r=>({id:r.id, title:r.title||r.role||'', org:lbl[r.leaderId]||'', reqNumber:r.reqNumber||null, hiringManager:r.manager||'', level:r.level? hcLevelName(r.level):'', openedReason:String(r.openReason||'').slice(0,160)}));
   /* recent conversation and change, bounded */
   const recentComments=comments.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,opts.comments||80).map(c=>({at:c.createdAt, authorId:c.authorId, entityType:c.entityType, entityId:c.entityId, text:String(c.text||'').slice(0,400), resolved:!!c.resolved, replyTo:c.parentId||''}));
   const recentActivity=(g.activity||[]).slice().sort((a,b)=>String(b.at||b.ts||'').localeCompare(String(a.at||a.ts||''))).slice(0,opts.activity||80).map(a=>({at:a.at||a.ts, actorId:a.actorId, action:a.action, entityType:a.entityType, entityId:a.entityId, entityName:a.entityName||'', changes:(a.changes||[]).slice(0,4)}));
@@ -5098,23 +5138,25 @@ function cirriSnapshot(g, H, PM, W, opts){
   return {
     generatedAt:new Date().toISOString(), today, weekOf:week, build:BUILD, workspace:WSR.name||'', viewer: opts.viewer||null,
     counts:{people:peopleOut.length, projects:projOut.length, activeProjects:projOut.filter(p=>p.queue==='active').length, tasks:taskOut.length, objectives:okrOut.length, metrics:metricsOut.length},
-    definitions:{ stale:'no update on open work for '+WSR.staleDays+'+ days', checkin:'the owner posts once a week on each active project: what moved, what is in the way, on track or not', onTimeRate90d:'share of tasks completed in the last 90 days that were done on or before their due date', medianReplyHours:'median hours from an @mention or a comment on their work to their first reply, last 90 days', unansweredOver48h:'requests to them with no reply after two days', datePushes:'times a due date was moved later' },
-    people:peopleOut, objectives:okrOut, projects:projOut, tasks:taskOut, metrics:metricsOut, checkinsThisWeek:checkinsWeek, recentComments, recentActivity };
+    definitions:{ queue:'QUEUED = a project that exists but is not committed to; ACTIVE = committed, with a date, being worked; CLOSED = done or abandoned. "Open" means active + queued. Only ACTIVE projects count as work in progress.', stale:'no update on open work for '+WSR.staleDays+'+ days', checkin:'the owner posts once a week on each active project: what moved, what is in the way, on track or not', onTimeRate90d:'share of tasks completed in the last 90 days that were done on or before their due date', medianReplyHours:'median hours from an @mention or a comment on their work to their first reply, last 90 days', unansweredOver48h:'requests to them with no reply after two days', datePushes:'times a due date was moved later' },
+    people:peopleOut, objectives:okrOut, projects:projOut, tasks:taskOut, metrics:metricsOut, pendingApprovals:approvalsOut, openReqs:reqsOut, checkinsThisWeek:checkinsWeek, recentComments, recentActivity };
 }
 /* A short text rendering for the model: compact, one line per entity, with ids for citation. */
 function snapshotText(s){
   const L=[]; const name=(id)=>{ const p=(s.people||[]).find(x=>x.id===id); return p? p.name : (id||'unassigned'); };
   L.push('WORKSPACE '+(s.workspace||'')+' | today '+s.today+' | week of '+s.weekOf+' | '+s.counts.people+' people, '+s.counts.activeProjects+' active of '+s.counts.projects+' projects, '+s.counts.tasks+' tasks, '+s.counts.objectives+' objectives, '+s.counts.metrics+' metrics');
   L.push('DEFINITIONS '+Object.keys(s.definitions).map(k=>k+': '+s.definitions[k]).join('; '));
-  L.push('\nPEOPLE (id | name | title | level | org | manager | active projects owned | open tasks | overdue tasks | overdue projects | date pushes on owned | stale active | check-ins missing this week | tasks done 90d | on-time % | median reply h | unanswered >48h | on leave)');
-  s.people.forEach(p=>L.push([p.id,p.name,p.title,p.level,p.org,name(p.managerId),p.activeProjectsOwned,p.openTasks,p.overdueTasks,p.overdueProjects,p.datePushesOnOwned,p.staleActiveProjects,p.checkinsMissingThisWeek,p.tasksDone90d,p.onTimeRate90d==null?'-':p.onTimeRate90d,p.medianReplyHours==null?'-':p.medianReplyHours,p.unansweredOver48h,p.onLeave?'leave':''].join(' | ')));
+  L.push('\nPEOPLE (id | name | title | level | org | manager | tenure months | ACTIVE projects owned | QUEUED projects owned (not in progress) | closed projects owned | open tasks | overdue tasks | overdue ACTIVE projects | date pushes on owned | stale active | check-ins missing this week | tasks done 90d | on-time % | median reply h | unanswered >48h | last in Cirri | on leave'+(s.people.some(p=>p.performance!==undefined)?' | performance rating | attrition risk':'')+')');
+  s.people.forEach(p=>L.push([p.id,p.name,p.title,p.level,p.org,name(p.managerId),p.tenureMonths==null?'-':p.tenureMonths,p.activeProjectsOwned,p.queuedProjectsOwned,p.closedProjectsOwned,p.openTasks,p.overdueTasks,p.overdueProjects,p.datePushesOnOwned,p.staleActiveProjects,p.checkinsMissingThisWeek,p.tasksDone90d,p.onTimeRate90d==null?'-':p.onTimeRate90d,p.medianReplyHours==null?'-':p.medianReplyHours,p.unansweredOver48h,p.lastInCirri?String(p.lastInCirri).slice(0,10):'-',p.onLeave?'leave':''].concat(p.performance!==undefined?[p.performance||'-',p.attritionRisk||'-']:[]).join(' | ')));
   L.push('\nOBJECTIVES (id | name | owner | health | criteria covered/total | active projects)');
   s.objectives.forEach(o=>L.push([o.id,o.name,name(o.ownerId),o.health,o.criteria.filter(c=>c.covered).length+'/'+o.criteria.length,o.activeProjects].join(' | ')));
-  L.push('\nPROJECTS (id | name | owner | queue | status | health | due | overdue days | pushes | days since activity | stale | open/done/overdue tasks | check-in this week | last check-in)');
-  s.projects.forEach(p=>L.push([p.id,p.name,name(p.ownerId),p.queue,p.status,p.health,p.dueDate||'-',p.overdueDays,p.datePushes,p.daysSinceActivity==null?'-':p.daysSinceActivity,p.stale?'stale':'',p.tasksOpen+'/'+p.tasksDone+'/'+p.tasksOverdue,p.checkinThisWeek?'yes':'no',p.lastCheckin? (p.lastCheckin.week+' '+p.lastCheckin.health+': '+String(p.lastCheckin.moved).slice(0,120)+(p.lastCheckin.blockers?' | blocked by: '+String(p.lastCheckin.blockers).slice(0,120):'')) : '-'].join(' | ')));
-  L.push('\nTASKS (id | title | projects | owners | status | due | overdue days | blocker)');
-  s.tasks.filter(t=>t.status!=='done'&&t.status!=='abandoned').forEach(t=>L.push([t.id,t.title,t.projectIds.join(','),t.ownerIds.map(name).join(','),t.status,t.dueDate||'-',t.overdueDays,t.blocker||''].join(' | ')));
-  if(s.metrics.length){ L.push('\nMETRICS (id | name | section | owner | cadence | latest period | value | goal)'); s.metrics.forEach(m=>L.push([m.id,m.name,m.section,name(m.ownerId),m.cadence,m.latest?m.latest.period:'-',m.latest?m.latest.value:'-',m.latest&&m.latest.goal!=null?m.latest.goal:'-'].join(' | '))); }
+  L.push('\nPROJECTS (id | name | owner | QUEUE | status | health | impact | effort | due | overdue days | pushes | days since activity | stale | open/done/overdue tasks | check-in this week | last check-in | latest note | recent history | description)');
+  s.projects.forEach(p=>L.push([p.id,p.name,name(p.ownerId),p.queue.toUpperCase(),p.status,p.health,p.impact||'-',p.effort||'-',p.dueDate||'-',p.overdueDays,p.datePushes,p.daysSinceActivity==null?'-':p.daysSinceActivity,p.stale?'stale':'',p.tasksOpen+'/'+p.tasksDone+'/'+p.tasksOverdue,p.checkinThisWeek?'yes':'no',p.lastCheckin? (p.lastCheckin.week+' '+p.lastCheckin.health+': '+String(p.lastCheckin.moved).slice(0,120)+(p.lastCheckin.blockers?' | blocked by: '+String(p.lastCheckin.blockers).slice(0,120):'')) : '-', p.latestNote? (String(p.latestNote.at).slice(0,10)+' '+name(p.latestNote.by)+': '+p.latestNote.text.replace(/\n/g,' ')) : '-', (p.history||[]).map(h=>h.at+' '+h.type+(h.from?' '+h.from+'->'+h.to:'')).join('; ')||'-', p.description? p.description.replace(/\n/g,' ') : '-'].join(' | ')));
+  L.push('\nOPEN TASKS (id | title | projects | owners | status | priority | due | overdue days | blocker | next steps | latest note)');
+  s.tasks.filter(t=>t.status!=='done'&&t.status!=='abandoned').forEach(t=>L.push([t.id,t.title,t.projectIds.join(','),t.ownerIds.map(name).join(','),t.status,t.priority||'-',t.dueDate||'-',t.overdueDays,t.blocker||'',(t.nextSteps||[]).join('; ')||'-',t.latestNote||'-'].join(' | ')));
+  if(s.metrics.length){ L.push('\nMETRICS (id | name | section | owner | cadence | good direction | latest period | value | goal | % of goal)'); s.metrics.forEach(m=>L.push([m.id,m.name,m.section,name(m.ownerId),m.cadence,m.goodDirection,m.latest?m.latest.period:'-',m.latest?m.latest.value:'-',m.latest&&m.latest.goal!=null?m.latest.goal:'-',m.latest&&m.latest.pctOfGoal!=null?m.latest.pctOfGoal+'%':'-'].join(' | '))); }
+  if((s.pendingApprovals||[]).length){ L.push('\nPENDING APPROVALS (id | kind | title | requested by | approver | since)'); s.pendingApprovals.forEach(a=>L.push([a.id,a.kind,a.title,a.requestedBy,a.approver,a.at].join(' | '))); }
+  if((s.openReqs||[]).length){ L.push('\nOPEN REQS - hiring in progress (id | title | org | level | hiring manager | why)'); s.openReqs.forEach(r=>L.push([r.id,r.title,r.org,r.level,r.hiringManager,r.openedReason||'-'].join(' | '))); }
   L.push('\nRECENT COMMENTS (at | author | on | text)'); s.recentComments.forEach(c=>L.push([c.at,name(c.authorId),c.entityType+':'+c.entityId,c.text.replace(/\n/g,' ')].join(' | ')));
   L.push('\nRECENT CHANGES (at | actor | action | on)'); s.recentActivity.forEach(a=>L.push([a.at,name(a.actorId),a.action,a.entityType+':'+a.entityId+' '+a.entityName].join(' | ')));
   return L.join('\n');
@@ -5126,6 +5168,7 @@ How to think:
 - Judge by outcomes and commitments, not activity. Someone with few tasks who ships on time is doing better than someone busy and late.
 - Look for the story behind the numbers: a project with many date pushes and no check-in and an owner with unanswered mentions is a pattern, not three facts.
 - Distinguish what is late from what is at risk of becoming late.
+- Every rate in the state comes with its count (tasks done in 90 days beside the on-time %). Quote the count with the rate.
 - Say what should happen next and who should do it.
 
 How to answer:
@@ -5147,7 +5190,8 @@ function AgentPanel({onClose, about}){
   const cfg=(g.state.meta.workspace||{}).agent||{};
   const ask=async()=>{ const question=q.trim(); if(!question||busy) return; setBusy(true); setErr('');
     try{
-      const snap=cirriSnapshot(g,H,PM,W,{viewer:me?{id:me.id,name:me.name}:null}); const text=snapshotText(snap);
+      const compV=PM.can('comp.view'); const snapOpts={viewer:me?{id:me.id,name:me.name}:null, approvals:PM.approvals||[], sessions:g.state.sessions||[], canComp:(e)=>PM.isOwner||permEmpAllows(compV,PM.me,PM.world,e)};
+      const snap=cirriSnapshot(g,H,PM,W,snapOpts); const text=snapshotText(snap);
       /* what this person has taught it: rewrites first, then good takes with notes, newest first, a few of each */
       const graded=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email && t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.note || t.feedback.rating)).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
       const examples=graded.slice(0,12).map(t=>({question:t.question, answer:String(t.feedback.edit||t.answer||'').slice(0,1500), rating:t.feedback.rating||'', rewritten:!!(t.feedback.edit&&t.feedback.edit.trim()), note:String(t.feedback.note||'').slice(0,400)})).filter(x=>x.rewritten||x.note||x.rating==='up').slice(0,6);
@@ -5158,19 +5202,32 @@ function AgentPanel({onClose, about}){
       const regen = prev && prev.question.trim().toLowerCase()===question.toLowerCase();
       const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
       if(regen && prev.status==='answered' && !(prev.feedback||{}).rating){ react(prev,{rating:'down',note:((prev.feedback||{}).note||'')||'asked again'}); }
+      ctxRef.current[id]=text;   /* kept so feedback can carry the full state it was judged against */
       store.writeEntity('takes', base);
       let answer='';
       if(store.mode!=='cloud'){ answer='(Local mode: the model is not called. The snapshot has '+snap.counts.people+' people and '+snap.counts.activeProjects+' active projects, '+text.length.toLocaleString()+' characters of context.)'; }
       else {
         const fn=firebase.functions? firebase.functions().httpsCallable('askCirri') : null; if(!fn) throw new Error('The agent function is not deployed yet.');
-        const r=await fn({question, context:text, system:AGENT_SYSTEM, provider:cfg.provider||'openai', model:modelUsed, examples}); answer=(r.data&&r.data.answer)||'';
+        const r=await fn({question, context:text, system:agentSystemFor(g.state.meta), provider:cfg.provider||'openai', model:modelUsed, examples}); answer=(r.data&&r.data.answer)||'';
       }
       store.writeEntity('takes', Object.assign({}, base, {answer, status:'answered', answeredAt:nowISO()})); setQ('');
     }catch(e){ setErr(String(e.message||e)); }
     setBusy(false); };
   const [editing,setEditing]=useState(null);   /* {id, text} while rewriting an answer */
   const fbRef=useRef({});   /* the latest feedback per take, so two reactions in a row both land */
-  const react=(t,patch)=>{ const cur=Object.assign({}, t.feedback||{}, fbRef.current[t.id]||{}, patch, {at:nowISO()}); fbRef.current[t.id]=cur; store.writeEntity('takes', Object.assign({}, t, {feedback:cur})); };
+  const react=(t,patch)=>{ const cur=Object.assign({}, t.feedback||{}, fbRef.current[t.id]||{}, patch, {at:nowISO()}); fbRef.current[t.id]=cur;
+    const ctx=Object.assign({}, t.context||{}); if(!ctx.text && ctxRef.current[t.id]) ctx.text=ctxRef.current[t.id];   /* a graded take keeps the state it was written from */
+    store.writeEntity('takes', Object.assign({}, t, {feedback:cur, context:ctx})); };
+  /* turn a note into a corrected answer: Cirri redoes it applying the feedback; the person accepts or fixes it */
+  const revise=async(t)=>{ const note=(fbRef.current[t.id]||t.feedback||{}).note||''; if(!note.trim()) return; setRevising(Object.assign({},revising,{[t.id]:true}));
+    try{ let text=ctxRef.current[t.id]||(t.context||{}).text||''; if(!text){ const compV=PM.can('comp.view'); const snap=cirriSnapshot(g,H,PM,W,{viewer:me?{id:me.id,name:me.name}:null, approvals:PM.approvals||[], sessions:g.state.sessions||[], canComp:(e)=>PM.isOwner||permEmpAllows(compV,PM.me,PM.world,e)}); text=snapshotText(snap); }
+      const instruction='Your previous answer to this question was:\n\n'+String(t.answer||'')+'\n\nThe leader\u2019s feedback on it: '+note+'\n\nWrite the answer again from the state, applying that feedback fully. Keep what was right. Same format rules.';
+      let revised='';
+      if(store.mode!=='cloud') revised='(Local mode: the model is not called. In cloud mode Cirri rewrites its answer here, applying: \u201c'+note+'\u201d)';
+      else { const fn=firebase.functions().httpsCallable('askCirri'); const r=await fn({question:t.question+'\n\n'+instruction, context:text, system:agentSystemFor(g.state.meta), provider:cfg.provider||'openai', model:t.model||cfg.model||''}); revised=(r.data&&r.data.answer)||''; }
+      setEditing({id:t.id,text:revised,proposed:true});
+    }catch(e){ setErr(String(e.message||e)); }
+    setRevising(Object.assign({},revising,{[t.id]:false})); };
   /* the model writes light markdown: paragraphs, "- " lists, **bold**, and [Name](#/project/ID) links */
   const inline=(text,key)=>{ const parts=String(text||'').split(/(\[[^\]]+\]\(#\/[a-z]+\/[^)]+\)|\*\*[^*]+\*\*)/g);
     return parts.map((p,i)=>{ const m=p.match(/^\[([^\]]+)\]\((#\/[a-z]+\/[^)]+)\)$/); if(m) return React.createElement('a',{key:key+'-'+i,href:m[2],className:'agent-link',onClick:(e)=>{ e.preventDefault(); window.location.hash=m[2]; window.dispatchEvent(new HashChangeEvent('hashchange')); }},m[1]);
@@ -5182,19 +5239,23 @@ function AgentPanel({onClose, about}){
       if(li){ flushP(); (list=list||[]).push(li[1]); return; } flushL();
       if(!t){ flushP(); return; } if(h){ flushP(); out.push(React.createElement('div',{key:'h'+out.length,className:'take-h'},inline(h[1],'h'+out.length))); return; } para.push(t); });
     flushL(); flushP(); return out; };
-  const [fbOpen,setFbOpen]=useState({}); const [fbText,setFbText]=useState({});
+  const [fbOpen,setFbOpen]=useState({}); const [fbText,setFbText]=useState({}); const ctxRef=useRef({}); const [revising,setRevising]=useState({});
+  const [ruleFor,setRuleFor]=useState(null);   /* {id, text} while turning a note into a standing rule */
+  const canRule=PM.isOwner||PM.can('access.manage').allow;
+  const saveRule=(t,text)=>{ const meta=g.state.meta||{}; const rules=agentRules(meta).concat([{id:uid('r'),text:text.trim(),from:t.id}]); g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, (meta.workspace||{}).agent||{}, {rules})})}); setRuleFor(null); };
   return React.createElement(React.Fragment,null,
     React.createElement('div',{className:'drawer-scrim',onClick:onClose}),
     React.createElement('div',{className:'drawer agent'},
-      React.createElement('div',{className:'dh agent-h'}, React.createElement('span',{className:'agent-orb'},React.createElement(Icon,{name:'sparkles',size:15})), React.createElement('div',{style:{flex:1}}, React.createElement('div',{className:'agent-word',style:{fontWeight:800,fontSize:16}},'Ask Cirri'), React.createElement('div',{className:'tiny muted'},'Answers from what you are allowed to see. Every answer is a take you can grade; that is how it learns.')), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
+      React.createElement('div',{className:'dh agent-h'}, React.createElement('span',{className:'agent-orb-live'}, React.createElement('span',{className:'agent-orb-core'},React.createElement(Icon,{name:'sparkles',size:15}))), React.createElement('div',{style:{flex:1}}, React.createElement('div',{className:'agent-word',style:{fontWeight:800,fontSize:16}},'Ask Cirri'), React.createElement('div',{className:'tiny muted'},'Answers from what you are allowed to see. Every answer is a take you can grade; that is how it learns.')), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
       React.createElement('div',{className:'chat'},
         React.createElement('div',{className:'chat-feed',ref:feedRef},
           takes.length? takes.map(t=>React.createElement('div',{key:t.id,className:'take'+(t.kind==='brief'?' brief':'')},
             t.kind==='brief'? React.createElement('div',{className:'take-brief-h'}, React.createElement('span',{className:'agent-word'},'Your brief'), React.createElement('span',{className:'tiny muted'},' \u00b7 '+fmtDate(t.at))) : React.createElement('div',{className:'take-q'}, t.question),
             React.createElement('div',{className:'take-a'}, t.status==='answered'? React.createElement('div',{style:{whiteSpace:'pre-wrap'}},render(t.answer)) : React.createElement('span',{className:'tiny muted'},'Thinking\u2026')),
             (editing&&editing.id===t.id)? React.createElement('div',{className:'take-edit'},
-              React.createElement('textarea',{className:'inp',rows:6,autoFocus:true,value:editing.text,onChange:e=>setEditing({id:t.id,text:e.target.value})}),
-              React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setEditing(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',onClick:()=>{ react(t,{edit:editing.text.trim(), rating:(t.feedback||{}).rating||'down'}); setEditing(null); }},'Save my version'))) : null,
+              editing.proposed? React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'Cirri\u2019s redo, applying your feedback. Read it, fix anything, then accept. Accepting makes it the training example.') : null,
+              React.createElement('textarea',{className:'inp',rows:8,autoFocus:true,value:editing.text,onChange:e=>setEditing(Object.assign({},editing,{text:e.target.value}))}),
+              React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setEditing(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',onClick:()=>{ react(t,{edit:editing.text.trim(), rating:(t.feedback||{}).rating||'down'}); setEditing(null); }}, editing.proposed? 'Accept as my version' : 'Save my version'))) : null,
             (t.feedback||{}).edit&&!(editing&&editing.id===t.id)? React.createElement('div',{className:'take-edited'}, React.createElement('div',{className:'tiny',style:{fontWeight:800,letterSpacing:'.05em',textTransform:'uppercase',color:'var(--deep)',marginBottom:4}},'Your version'), React.createElement('div',{style:{whiteSpace:'pre-wrap'}},render((t.feedback||{}).edit))) : null,
             t.status==='answered'? React.createElement('div',{className:'take-fb'},
               React.createElement('div',{className:'take-fb-row'},
@@ -5208,13 +5269,23 @@ function AgentPanel({onClose, about}){
                 React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:6}},
                   React.createElement('button',{className:'btn sm',onClick:()=>setFbOpen(Object.assign({},fbOpen,{[t.id]:false}))},'Cancel'),
                   React.createElement('button',{className:'btn sm primary',disabled:!String(fbText[t.id]!==undefined? fbText[t.id] : ((t.feedback||{}).note||'')).trim(),onClick:()=>{ react(t,{note:String(fbText[t.id]!==undefined? fbText[t.id] : (t.feedback||{}).note||'').trim(), rating:(t.feedback||{}).rating||'down'}); setFbOpen(Object.assign({},fbOpen,{[t.id]:false})); }},'Send feedback'))) : null,
-              (t.feedback||{}).note&&!fbOpen[t.id]? React.createElement('div',{className:'take-note'}, React.createElement(Icon,{name:'sparkles',size:12}), React.createElement('span',null,(t.feedback||{}).note)) : null) : null))
-          : React.createElement('div',{className:'chat-empty'}, React.createElement(Icon,{name:'sparkles',size:26,strokeWidth:1.5}), React.createElement('div',null,'Ask about who is ahead, who is behind, what is stalled, what needs a decision. It answers from the live record, as you are allowed to see it.'))),
+              (t.feedback||{}).note&&!fbOpen[t.id]? React.createElement('div',{className:'take-note'}, React.createElement(Icon,{name:'sparkles',size:12}), React.createElement('span',{style:{flex:1}},(t.feedback||{}).note),
+                !(t.feedback||{}).edit? React.createElement('button',{className:'btn sm',style:{flex:'0 0 auto'},disabled:!!revising[t.id],onClick:()=>revise(t)}, revising[t.id]? 'Redoing\u2026' : 'Redo it with this feedback') : null,
+                canRule? React.createElement('button',{className:'btn sm',style:{flex:'0 0 auto'},onClick:()=>setRuleFor({id:t.id,text:(t.feedback||{}).note||''})},'Make it a rule') : null) : null,
+              ruleFor&&ruleFor.id===t.id? React.createElement('div',{className:'teach'},
+                React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'Write it as a rule for every answer from now on, in general terms. Not \u201cKev only has one task\u201d but \u201cfewer than five items is not a track record\u201d.'),
+                React.createElement('textarea',{className:'inp',rows:2,autoFocus:true,value:ruleFor.text,onChange:e=>setRuleFor({id:t.id,text:e.target.value})}),
+                React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setRuleFor(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',disabled:!ruleFor.text.trim(),onClick:()=>saveRule(t,ruleFor.text)},'Save as a standing rule'))) : null) : null))
+          : React.createElement('div',{className:'agent-empty'},
+              React.createElement('div',{className:'agent-orb-live big'}, React.createElement('span',{className:'agent-orb-core'}, React.createElement(Icon,{name:'sparkles',size:26}))),
+              React.createElement('div',{className:'agent-word agent-word-live agent-empty-h'},'A Billion Neurons Firing'),
+              React.createElement('div',{className:'agent-empty-sub'},'It answers from the live record, as you are allowed to see it. Grade what it says; that is how it learns your judgement.'),
+              React.createElement('div',{className:'agent-cards'}, starters.map(st=>React.createElement('button',{key:st.id,className:'agent-card',onClick:()=>{ setQ(st.prompt); }},React.createElement('div',{className:'agent-card-l'},st.label),React.createElement('div',{className:'agent-card-p'},st.prompt)))))),
         React.createElement('div',{className:'chat-composer'},
           err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
-          React.createElement('div',{className:'starters'}, starters.map(st=>React.createElement('button',{key:st.id,className:'starter',disabled:busy,onClick:()=>setQ(st.prompt)},st.label))),
+          takes.length? React.createElement('div',{className:'starters'}, starters.map(st=>React.createElement('button',{key:st.id,className:'starter',disabled:busy,onClick:()=>setQ(st.prompt)},st.label))) : null,
           React.createElement('textarea',{className:'inp',rows:2,placeholder:'Who is behind this week, and why?',value:q,disabled:busy,onChange:e=>setQ(e.target.value),onKeyDown:e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); ask(); } }}),
-          React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:8,marginTop:6}}, React.createElement('span',{className:'tiny muted'},'\u2318/Ctrl+Enter'), React.createElement('button',{className:'btn sm primary',disabled:busy||!q.trim(),onClick:ask}, busy?'Thinking\u2026':'Ask'))))));
+          React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:10,marginTop:8}}, React.createElement('span',{className:'tiny muted'},'\u2318/Ctrl+Enter'), React.createElement('button',{className:'agent-ask'+(busy?' busy':''),disabled:busy||!q.trim(),onClick:ask}, React.createElement(Icon,{name:'sparkles',size:14}), busy?'Thinking\u2026':'Ask Cirri'))))));
 }
 
 /* ---------------- Drawer host ---------------- */
@@ -11796,6 +11867,15 @@ function SettingsGeneral({isAdmin, page, setPage}){
     React.createElement('div',{className:'gen-nav'}, pages.map(p=>React.createElement('button',{key:p.id,className:'gen-item'+(cur.id===p.id?' on':''),onClick:()=>setPage(p.id)}, React.createElement(Icon,{name:p.ic,size:14}), p.label))),
     React.createElement('div',{className:'gen-body'}, body));
 }
+const AGENT_RULES_DEFAULT=[
+  {id:'r_sample',text:'Never read a rate without its count. Fewer than five items is not a track record; say "too few to judge" rather than compare it to anyone.'},
+  {id:'r_leave',text:'Someone on leave is not slow, stalled or behind. Say they are on leave and move on.'},
+  {id:'r_weight',text:'Weigh by consequence: a slip on the project an objective depends on outweighs several slips on side projects.'},
+  {id:'r_activity',text:'Judge outcomes and commitments, not activity. Few tasks shipped on time beats many tasks late.'},
+];
+function agentRules(meta){ const w=(meta&&meta.workspace)||{}; const r=(w.agent||{}).rules; return Array.isArray(r)? r : AGENT_RULES_DEFAULT; }
+function agentFoundation(meta){ const w=(meta&&meta.workspace)||{}; const f=(w.agent||{}).foundation; return (typeof f==='string'&&f.trim())? f : AGENT_SYSTEM; }
+function agentSystemFor(meta){ const rules=agentRules(meta).filter(r=>r.text&&r.text.trim()); return agentFoundation(meta)+(rules.length? '\n\nSTANDING RULES OF JUDGEMENT set by this company\u2019s leaders. Apply every one, every time:\n'+rules.map((r,i)=>(i+1)+'. '+r.text.trim()).join('\n') : ''); }
 const AGENT_STARTERS_DEFAULT=[
   {id:'behind',label:'Who is behind?',prompt:'Who is behind this week, and why? Weigh the projects that matter most.'},
   {id:'ahead',label:'Who is ahead?',prompt:'Who is doing the best work right now, judged by outcomes, not activity?'},
@@ -11806,7 +11886,7 @@ const AGENT_STARTERS_DEFAULT=[
 function agentStarters(meta){ const w=(meta&&meta.workspace)||{}; return (Array.isArray((w.agent||{}).starters)&&w.agent.starters.length)? w.agent.starters : AGENT_STARTERS_DEFAULT; }
 function SettingsAgentTab({isAdmin}){
   const [page,setPage]=useState('model'); const PM=usePerms();
-  const pages=[{id:'model',label:'Model',ic:'sparkles',body:React.createElement(SettingsAgent)},{id:'prompts',label:'Prompts',ic:'message-circle',body:React.createElement(SettingsAgentPrompts)},{id:'briefs',label:'Briefs',ic:'clock',body:React.createElement(SettingsAgentBriefs,{isAdmin})},{id:'takes',label:'Takes',ic:'history',body:React.createElement(SettingsAgentTakes)}].filter(p=> isAdmin || p.id==='prompts');
+  const pages=[{id:'model',label:'Model',ic:'sparkles',body:React.createElement(SettingsAgent)},{id:'prompts',label:'Prompts',ic:'message-circle',body:React.createElement(SettingsAgentPrompts)},{id:'briefs',label:'Briefs',ic:'clock',body:React.createElement(SettingsAgentBriefs,{isAdmin})},{id:'foundation',label:'Foundation',ic:'target',body:React.createElement(SettingsAgentFoundation)},{id:'rules',label:'Judgement',ic:'compass',body:React.createElement(SettingsAgentRules)},{id:'learn',label:'Learn',ic:'sparkles',body:React.createElement(SettingsAgentLearn)},{id:'takes',label:'Takes',ic:'history',body:React.createElement(SettingsAgentTakes)}].filter(p=> isAdmin || p.id==='prompts');
   return React.createElement(SettingsSplit,{page,setPage,pages});
 }
 /* Prompts people start from. Editable so the company's own questions are the defaults. */
@@ -11850,6 +11930,88 @@ function SettingsAgentBriefs({isAdmin}){
         React.createElement('div',{className:'ledit-row add'}, React.createElement('div',{style:{flex:'1 1 260px'}}, React.createElement(SearchSelect,{options:opts,value:'',placeholder:'Add a person\u2026',onChange:(id)=>{ if(id) add(id); }})))),
       !briefs.length? React.createElement('div',{className:'tiny muted',style:{marginTop:8}},'Nobody yet. Start with yourself and the department heads.') : null));
 }
+/* The learning loop: human feedback -> collated bundle -> a revised foundation and rules -> applied, versioned.
+   The bundle is plain text a person can paste to any capable model (or to Cirri itself); the revision comes
+   back in a fixed format this page can read. */
+const REVISION_FORMAT='=== FOUNDATION ===\n<the full revised foundation text>\n=== RULES ===\n1. <rule>\n2. <rule>\n=== SUMMARY ===\n<two or three sentences on what changed and why>';
+function agentFeedbackSince(takes, since){ return (takes||[]).filter(t=>t.status==='answered' && t.feedback && (t.feedback.rating||t.feedback.note||(t.feedback.edit&&t.feedback.edit.trim())) && String(t.feedback.at||t.at)>String(since||'')).sort((a,b)=>String(a.feedback.at||a.at).localeCompare(String(b.feedback.at||b.at))); }
+function agentBundle(meta, items, nameOf){
+  const L=[]; L.push('CIRRI LEARNING BUNDLE - '+(WSR.name||'')+' - '+nowISO().slice(0,10));
+  L.push('\nTASK: You are revising the standing instructions for Cirri, an AI that answers leaders\u2019 questions about their company from live data. Below are the CURRENT FOUNDATION (how it should look at the data) and CURRENT RULES (standing principles), then every piece of human FEEDBACK since the last revision. Read the feedback for patterns. Rewrite the foundation where the method itself was wrong or missing something; add, merge or sharpen rules where a principle was taught; drop nothing that still holds. Keep both in plain English, general, and short. Reply in EXACTLY this format and nothing else:\n'+REVISION_FORMAT);
+  L.push('\n=== CURRENT FOUNDATION ===\n'+agentFoundation(meta));
+  L.push('\n=== CURRENT RULES ===\n'+agentRules(meta).map((r,i)=>(i+1)+'. '+r.text).join('\n'));
+  L.push('\n=== FEEDBACK ('+items.length+' items) ===');
+  items.forEach((t,i)=>{ const f=t.feedback||{}; L.push('\n--- '+(i+1)+'. '+String(f.at||t.at).slice(0,10)+' \u00b7 '+(nameOf? nameOf(t.askedBy) : t.askedBy)+(t.kind==='brief'?' \u00b7 brief':'')+' \u00b7 rated: '+(f.rating||'unrated'));
+    L.push('QUESTION: '+String(t.question||'').slice(0,500)); L.push('CIRRI SAID: '+String(t.answer||'').slice(0,1200).replace(/\n+/g,' '));
+    if(f.note) L.push('FEEDBACK: '+f.note); if(f.edit&&f.edit.trim()) L.push('THE LEADER\u2019S VERSION: '+String(f.edit).slice(0,1200).replace(/\n+/g,' ')); });
+  return L.join('\n');
+}
+function parseRevision(text){ const t=String(text||''); const grab=(a,b)=>{ const i=t.indexOf(a); if(i<0) return null; const j=b? t.indexOf(b,i+a.length) : -1; return t.slice(i+a.length, j<0? undefined : j).trim(); };
+  const foundation=grab('=== FOUNDATION ===','=== RULES ==='); const rulesRaw=grab('=== RULES ===','=== SUMMARY ==='); const summary=grab('=== SUMMARY ===',null)||'';
+  if(foundation==null||rulesRaw==null) return null;
+  const rules=rulesRaw.split('\n').map(l=>l.replace(/^\s*\d+[.)]\s*/,'').trim()).filter(Boolean).map(text=>({id:uid('r'),text}));
+  return {foundation, rules, summary}; }
+function SettingsAgentLearn(){
+  const g=useGtm(); const H=useHc(); const store=useStore(); const meta=g.state.meta||{}; const cfg=(meta.workspace||{}).agent||{};
+  const nameOf=(em)=>{ const e=H.employees.find(x=>String(x.email||'').toLowerCase()===String(em||'').toLowerCase()); return e? e.name : em; };
+  const items=agentFeedbackSince(g.state.takes, cfg.collatedThrough||''); const revisions=(cfg.revisions||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const [paste,setPaste]=useState(''); const [msg,setMsg]=useState(''); const [drafting,setDrafting]=useState(false); const [err,setErr]=useState('');
+  const bundle=()=>agentBundle(meta, items, nameOf);
+  const copy=async()=>{ try{ await navigator.clipboard.writeText(bundle()); setMsg('Copied. Paste it to Claude, ChatGPT, or use Draft with Cirri.'); }catch(e){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([bundle()],{type:'text/plain'})); a.download='cirri-learning-bundle-'+todayStr()+'.txt'; a.click(); setMsg('Downloaded.'); } setTimeout(()=>setMsg(''),4000); };
+  const draft=async()=>{ setDrafting(true); setErr(''); try{ if(store.mode!=='cloud') throw new Error('Drafting needs the live workspace.'); const fn=firebase.functions().httpsCallable('askCirri'); const r=await fn({question:'Revise the instructions as the bundle asks. Reply in exactly the format given.', context:bundle(), system:'You are an expert at writing instructions for AI assistants that advise executives. Be precise, general, and brief. Reply only in the requested format.', provider:cfg.provider||'openai', model:cfg.model||''}); setPaste((r.data&&r.data.answer)||''); }catch(e){ setErr(String(e.message||e)); } setDrafting(false); };
+  const parsed=parseRevision(paste);
+  const apply=()=>{ if(!parsed) return; const rev={id:uid('rev'), at:nowISO(), by:String((store.user&&store.user.email)||'').toLowerCase(), summary:parsed.summary.slice(0,600), rules:parsed.rules.length, foundationChars:parsed.foundation.length, feedbackCovered:items.length, previousFoundation:agentFoundation(meta), previousRules:agentRules(meta)};
+    g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, cfg, {foundation:parsed.foundation, rules:parsed.rules, collatedThrough:nowISO(), revisions:(cfg.revisions||[]).concat([rev])})})}); setPaste(''); setMsg('Applied. Every answer and brief now uses revision '+((cfg.revisions||[]).length+1)+'.'); setTimeout(()=>setMsg(''),5000); };
+  const restore=(rev)=>{ g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, cfg, {foundation:rev.previousFoundation, rules:rev.previousRules})})}); setMsg('Restored the instructions from before that revision.'); setTimeout(()=>setMsg(''),4000); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'How Cirri gets smarter',desc:'People give feedback on answers. It collects here. When there is enough, copy the bundle and hand it to a capable model - Claude, ChatGPT, or Cirri itself - which reads all of it and rewrites the foundation and the rules. Paste the revision back, review it, apply it. Every revision is kept, and the feedback it covered is marked so the next bundle is only what is new.'},
+      React.createElement(SettingRow,{label:'Feedback since the last revision',hint:items.length? (items.filter(t=>(t.feedback||{}).edit).length+' rewritten \u00b7 '+items.filter(t=>(t.feedback||{}).note).length+' with notes \u00b7 '+items.filter(t=>(t.feedback||{}).rating==='down').length+' rated off') : 'Nothing new yet. Feedback lands here as people give it.'},
+        React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap',alignItems:'center'}}, React.createElement('span',{style:{fontSize:20,fontWeight:800,color:'var(--deep)',marginRight:6}},items.length),
+          React.createElement('button',{className:'btn sm primary',disabled:!items.length,onClick:copy},'Copy the bundle'),
+          React.createElement('button',{className:'agent-ask',style:{padding:'6px 14px',fontSize:12.5},disabled:!items.length||drafting,onClick:draft},React.createElement(Icon,{name:'sparkles',size:13}), drafting?'Drafting\u2026':'Draft with Cirri'))),
+      React.createElement(SettingRow,{label:'Paste the revision',wide:true,hint:'In this format: '+REVISION_FORMAT.replace(/\n/g,' \u00b7 ')},
+        React.createElement('div',null,
+          err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
+          React.createElement('textarea',{className:'inp',rows:10,style:{width:'100%',fontFamily:'ui-monospace,Menlo,monospace',fontSize:12},placeholder:'=== FOUNDATION ===\n\u2026',value:paste,onChange:e=>setPaste(e.target.value)}),
+          paste.trim()? React.createElement('div',{className:'tiny',style:{marginTop:6,color:parsed?'var(--green)':'var(--red)',fontWeight:600}}, parsed? ('Readable: foundation of '+parsed.foundation.length+' characters, '+parsed.rules.length+' rules'+(parsed.summary?'. '+parsed.summary.slice(0,140):'')) : 'Not in the expected format - it needs the === FOUNDATION === and === RULES === markers.') : null,
+          React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:8}}, React.createElement('button',{className:'btn sm primary',disabled:!parsed,onClick:apply},'Review done - apply this revision')))),
+      msg? React.createElement('div',{className:'tiny',style:{color:'var(--green)',fontWeight:600,marginTop:8}},msg) : null),
+    React.createElement(AdminCard,{title:'Revisions',desc:'Each applied revision, newest first. Restore puts back the instructions from before it.'},
+      revisions.length? revisions.map((r,i)=>React.createElement('div',{key:r.id,className:'srow'},
+        React.createElement('div',{className:'srow-l'}, React.createElement('div',{className:'srow-lbl'},'Revision '+(revisions.length-i)+' \u00b7 '+fmtDate(r.at)), React.createElement('div',{className:'srow-hint'},(r.summary||'No summary')+' \u00b7 '+r.rules+' rules \u00b7 covered '+r.feedbackCovered+' items \u00b7 by '+nameOf(r.by))),
+        React.createElement('div',{className:'srow-c'}, React.createElement('button',{className:'btn sm ghost',onClick:()=>restore(r)},'Restore the version before'))))
+      : React.createElement('div',{className:'tiny muted'},'None yet.')));
+}
+/* The foundation: how Cirri looks at the data before any rule. Editable, with the original one click away. */
+function SettingsAgentFoundation(){
+  const g=useGtm(); const meta=g.state.meta||{}; const base=agentFoundation(meta);
+  const [text,setText]=useState(base); const [msg,setMsg]=useState('');
+  useEffect(()=>{ setText(agentFoundation(g.state.meta)); },[agentFoundation(g.state.meta)]);
+  const dirty=text!==base;
+  const save=()=>{ g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, (meta.workspace||{}).agent||{}, {foundation:text.trim()})})}); setMsg('Saved.'); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'Foundation',desc:'How Cirri reads the data before any rule applies: what the facts are, how to weigh them, how to answer. Rules of judgement layer on top. Usually revised through the Learn page rather than by hand.'},
+      React.createElement('textarea',{className:'inp',rows:18,style:{width:'100%',fontSize:13,lineHeight:1.5},value:text,onChange:e=>{ setText(e.target.value); setMsg(''); }}),
+      React.createElement('div',{style:{display:'flex',gap:8,marginTop:8,alignItems:'center'}}, React.createElement('button',{className:'btn sm ghost',onClick:()=>{ setText(AGENT_SYSTEM); setMsg(''); }},'Reset to the original'), React.createElement('span',{className:'tiny muted'},text.length.toLocaleString()+' characters')),
+      React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setText(base); setMsg(''); }})));
+}
+/* Standing rules of judgement: the principles behind the corrections, in the leaders' words. */
+function SettingsAgentRules(){
+  const g=useGtm(); const meta=g.state.meta||{}; const base=agentRules(meta);
+  const [list,setList]=useState(()=>base.map(x=>({...x}))); const [msg,setMsg]=useState('');
+  useEffect(()=>{ setList(agentRules(g.state.meta).map(x=>({...x}))); },[JSON.stringify(agentRules(g.state.meta))]);
+  const dirty=JSON.stringify(list)!==JSON.stringify(base);
+  const save=()=>{ g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, (meta.workspace||{}).agent||{}, {rules:list.filter(x=>x.text.trim()).map(x=>({id:x.id||uid('r'),text:x.text.trim(),from:x.from||''}))})})}); setMsg('Saved.'); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'Rules of judgement',desc:'A correction teaches Cirri what one answer should have said. A rule teaches it why, and applies to every answer and every brief from now on. Write rules as general statements; the sample-size rule is the model. These rules also go into every training example, so a fine-tuned model learns the answers and the reasons together.'},
+      React.createElement('div',{className:'ledit'}, list.map((r,i)=>React.createElement('div',{key:r.id||i,className:'ledit-row',style:{alignItems:'flex-start'}},
+        React.createElement('span',{className:'tiny muted',style:{flex:'0 0 22px',paddingTop:9}},(i+1)+'.'),
+        React.createElement('textarea',{className:'inp',rows:2,style:{flex:'1 1 auto'},value:r.text,onChange:e=>{ const n=list.slice(); n[i]=Object.assign({},n[i],{text:e.target.value}); setList(n); setMsg(''); }}),
+        r.from? React.createElement('span',{className:'tiny muted',style:{flex:'0 0 auto',paddingTop:9},'data-tip':'Made from a correction'},'from feedback') : null,
+        React.createElement('button',{className:'btn sm ghost icon','aria-label':'Remove',onClick:()=>{ setList(list.filter((x,j)=>j!==i)); setMsg(''); }},React.createElement(Icon,{name:'trash',size:13})))),
+        React.createElement('div',{className:'ledit-row add'}, React.createElement('button',{className:'btn sm',onClick:()=>{ setList(list.concat([{id:uid('r'),text:''}])); setMsg(''); }},'+ Add a rule'), React.createElement('button',{className:'btn sm ghost',onClick:()=>{ setList(AGENT_RULES_DEFAULT.map(x=>({...x}))); setMsg(''); }},'Reset to defaults'))),
+      React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setList(base.map(x=>({...x}))); setMsg(''); }})));
+}
 /* Every take, readable, with its feedback; and the two exports. */
 function SettingsAgentTakes(){
   const g=useGtm(); const H=useHc(); const takes=(g.state.takes||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
@@ -11861,7 +12023,7 @@ function SettingsAgentTakes(){
   const csv=()=>{ const rows=[['at','askedBy','kind','question','answer','rating','edited_answer','note','model','arm']].concat(takes.map(t=>[t.at,t.askedBy,t.kind||'ask',t.question,t.answer||'',(t.feedback||{}).rating||'',(t.feedback||{}).edit||'',(t.feedback||{}).note||'',t.model||'',t.arm||''])); dl('cirri-takes-'+todayStr()+'.csv', rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'), 'text/csv'); };
   /* the fine-tuning file: one line per example in the chat format OpenAI's tuning job reads.
      A rewrite is the target answer; a good take is its own target. Notes become part of the instruction. */
-  const jsonl=()=>{ const lines=takes.filter(t=>t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.rating==='up')).map(t=>JSON.stringify({messages:[{role:'system',content:AGENT_SYSTEM+((t.feedback||{}).note? '\n\nGuidance from the leader on this kind of question: '+t.feedback.note : '')},{role:'user',content:t.question},{role:'assistant',content:(t.feedback.edit&&t.feedback.edit.trim())||t.answer}]})); dl('cirri-finetune-'+todayStr()+'.jsonl', lines.join('\n'), 'application/jsonl'); return lines.length; };
+  const jsonl=()=>{ const lines=takes.filter(t=>t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.rating==='up')).map(t=>JSON.stringify({messages:[{role:'system',content:agentSystemFor(g.state.meta)+((t.feedback||{}).note? '\n\nGuidance from the leader on this kind of question: '+t.feedback.note : '')},{role:'user',content:t.question},{role:'assistant',content:(t.feedback.edit&&t.feedback.edit.trim())||t.answer}]})); dl('cirri-finetune-'+todayStr()+'.jsonl', lines.join('\n'), 'application/jsonl'); return lines.length; };
   const trainable=takes.filter(t=>t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.rating==='up')).length;
   return React.createElement('div',{className:'spage',style:{maxWidth:980}},
     React.createElement(AdminCard,{title:'What it has learned from',desc:'Every take lives here, in the database, and nowhere else. Feedback changes answers two ways: the asker\u2019s own rewrites and graded takes are handed to the model as examples on every question, today; and a fine-tuning run, when you choose to do one, trains a model on the file below.'},
