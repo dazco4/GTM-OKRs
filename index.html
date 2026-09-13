@@ -919,9 +919,20 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .drawer.agent{width:min(680px,94vw);z-index:86}
 .drawer.agent .chat{flex:1;min-height:0}
 .take{margin:10px 0 14px}
-.take-q{font-weight:700;font-size:13.5px;color:var(--ink);background:#eef2f6;border-radius:10px 10px 10px 2px;padding:8px 12px;display:inline-block;max-width:92%}
+.take-q{font-weight:700;font-size:13.5px;color:var(--ink);background:#eef2f6;border-radius:10px 10px 10px 2px;padding:8px 12px;display:inline-block;max-width:92%;white-space:pre-wrap;overflow-wrap:anywhere}
+.take-a{overflow-wrap:anywhere}
+.take-a p{margin:0 0 8px}.take-a ul{margin:0 0 8px 18px;padding:0}.take-a li{margin:2px 0}.take-a b{font-weight:750}
+.take-h{font-weight:800;font-size:13.5px;margin:10px 0 4px;color:var(--deep)}
+.take-fb-row{display:flex;flex-wrap:wrap;gap:6px}
+.fb-btn{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:650;color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.fb-btn:hover{border-color:#8b7cf6;color:var(--deep)}
+.fb-btn.on{background:var(--deep);color:#fff;border-color:var(--deep)}
+.fb-btn.on.good{background:#1f8f6a;border-color:#1f8f6a}.fb-btn.on.off{background:#b23a2f;border-color:#b23a2f}
+.teach{margin-top:8px;border:1px solid #d9d4fb;border-radius:12px;padding:10px 12px;background:linear-gradient(135deg,#f6fbfb,#f5f3ff)}
+.take-note{display:flex;gap:6px;align-items:flex-start;margin-top:8px;font-size:12.5px;color:var(--ink-2);background:#f5f3ff;border-radius:8px;padding:6px 10px;overflow-wrap:anywhere}
+.take-note svg{flex:0 0 auto;margin-top:2px;stroke:#6d5ef0}
 .take-a{font-size:14px;line-height:1.55;color:var(--ink);padding:10px 2px 4px}
-.take-fb{display:flex;align-items:center;gap:6px;margin-top:4px}
+.take-fb{display:flex;flex-direction:column;align-items:stretch;gap:6px;margin-top:6px}
 .take-fb .msg-act.on{background:var(--accent-bg);color:var(--deep)}
 .agent-link{color:var(--accent-700);font-weight:650;text-decoration:underline}
 .take-edit{margin:6px 0}
@@ -933,6 +944,10 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .dtab-ask svg{stroke:url(#agentGrad)}
 .take.brief{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fbfbfe}
 .take-brief-h{font-weight:800;font-size:13px;margin-bottom:4px}
+.take-row{border:1px solid var(--line);border-radius:10px;margin-bottom:6px;background:#fff}
+.take-row-h{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:13px}
+.take-row-h:hover{background:#f6f9fb}
+.take-row-b{padding:10px 14px 12px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5}
 .perm-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fbfcfd;border-bottom:1px solid var(--line)}
 .perm-bulk{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
 .perm-bulk .btn.sm.ghost{padding:2px 7px;font-size:11px;text-transform:none;letter-spacing:0}
@@ -5104,8 +5119,22 @@ function snapshotText(s){
   L.push('\nRECENT CHANGES (at | actor | action | on)'); s.recentActivity.forEach(a=>L.push([a.at,name(a.actorId),a.action,a.entityType+':'+a.entityId+' '+a.entityName].join(' | ')));
   return L.join('\n');
 }
-const AGENT_SYSTEM=`You are Cirri, the operating brain of a company. You are given the current state of the company as the person asking is allowed to see it: people, objectives, projects, tasks, metrics, recent conversation and changes, plus computed facts (on-time rates, date pushes, reply times, stale days, missing check-ins). The facts are inputs, not verdicts. You weigh them with judgement: a slip on the most important project matters more than three slips on a side project; a slow reply from someone on leave is not a signal; a missing check-in on a project due next week matters more than one due next year.
-Answer the question asked, directly, in plain English. Lead with the answer. Be specific: name people and projects, cite the facts you are relying on with their numbers, and link every project, task or objective you mention as [Name](#/project/ID), [Name](#/task/ID) or [Name](#/objective/ID). Say what you are unsure about and what you would need to know. Do not pad, do not moralise, do not invent anything that is not in the state. If the question cannot be answered from the state, say so.`;
+const AGENT_SYSTEM=`You are Cirri, the operating brain of a company, answering one leader. You are given the current state of the company as they are allowed to see it - people, objectives, projects, tasks, metrics, recent conversation and changes - plus computed facts: on-time rates, date pushes, reply times, stale days, missing check-ins. Every field is defined in the DEFINITIONS line.
+
+How to think:
+- The facts are inputs, not verdicts. Weigh them. A slip on the project an objective depends on matters more than three slips on a side project. A slow reply from someone on leave is noise. A missing check-in on a project due next week matters; on one due next year it does not.
+- Judge by outcomes and commitments, not activity. Someone with few tasks who ships on time is doing better than someone busy and late.
+- Look for the story behind the numbers: a project with many date pushes and no check-in and an owner with unanswered mentions is a pattern, not three facts.
+- Distinguish what is late from what is at risk of becoming late.
+- Say what should happen next and who should do it.
+
+How to answer:
+- Lead with the answer in one or two sentences. Then the reasons, each tied to a named fact with its number.
+- Name people and projects. Link every project, task or objective you mention exactly as [Name](#/project/ID), [Name](#/task/ID) or [Name](#/objective/ID) using the ids in the state.
+- Use short paragraphs and, where a list helps, a bulleted list with "- ". Bold the names of people with **name** on first mention.
+- Be direct and specific. No preamble, no hedging language, no summaries of what you were asked.
+- If the state does not support an answer, say exactly what is missing. Never invent a fact.
+- Under 300 words unless the question needs more.`;
 
 /* ---- the panel ---- */
 function AgentPanel({onClose, about}){
@@ -5119,6 +5148,9 @@ function AgentPanel({onClose, about}){
   const ask=async()=>{ const question=q.trim(); if(!question||busy) return; setBusy(true); setErr('');
     try{
       const snap=cirriSnapshot(g,H,PM,W,{viewer:me?{id:me.id,name:me.name}:null}); const text=snapshotText(snap);
+      /* what this person has taught it: rewrites first, then good takes with notes, newest first, a few of each */
+      const graded=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email && t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.note || t.feedback.rating)).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+      const examples=graded.slice(0,12).map(t=>({question:t.question, answer:String(t.feedback.edit||t.answer||'').slice(0,1500), rating:t.feedback.rating||'', rewritten:!!(t.feedback.edit&&t.feedback.edit.trim()), note:String(t.feedback.note||'').slice(0,400)})).filter(x=>x.rewritten||x.note||x.rating==='up').slice(0,6);
       /* which model answers: the candidate for a share of questions, so versions can be compared on the same traffic */
       const useCandidate = !!cfg.candidate && Math.random()*100 < (Number(cfg.candidateShare)||0);
       const modelUsed = useCandidate? cfg.candidate : (cfg.model||'');
@@ -5131,7 +5163,7 @@ function AgentPanel({onClose, about}){
       if(store.mode!=='cloud'){ answer='(Local mode: the model is not called. The snapshot has '+snap.counts.people+' people and '+snap.counts.activeProjects+' active projects, '+text.length.toLocaleString()+' characters of context.)'; }
       else {
         const fn=firebase.functions? firebase.functions().httpsCallable('askCirri') : null; if(!fn) throw new Error('The agent function is not deployed yet.');
-        const r=await fn({question, context:text, system:AGENT_SYSTEM, provider:cfg.provider||'openai', model:modelUsed}); answer=(r.data&&r.data.answer)||'';
+        const r=await fn({question, context:text, system:AGENT_SYSTEM, provider:cfg.provider||'openai', model:modelUsed, examples}); answer=(r.data&&r.data.answer)||'';
       }
       store.writeEntity('takes', Object.assign({}, base, {answer, status:'answered', answeredAt:nowISO()})); setQ('');
     }catch(e){ setErr(String(e.message||e)); }
@@ -5139,9 +5171,18 @@ function AgentPanel({onClose, about}){
   const [editing,setEditing]=useState(null);   /* {id, text} while rewriting an answer */
   const fbRef=useRef({});   /* the latest feedback per take, so two reactions in a row both land */
   const react=(t,patch)=>{ const cur=Object.assign({}, t.feedback||{}, fbRef.current[t.id]||{}, patch, {at:nowISO()}); fbRef.current[t.id]=cur; store.writeEntity('takes', Object.assign({}, t, {feedback:cur})); };
-  const render=(text)=>{ /* the model links [Name](#/project/ID); turn those into app links, keep the rest plain */
-    const parts=String(text||'').split(/(\[[^\]]+\]\(#\/[a-z]+\/[^)]+\))/g);
-    return parts.map((p,i)=>{ const m=p.match(/^\[([^\]]+)\]\((#\/[a-z]+\/[^)]+)\)$/); return m? React.createElement('a',{key:i,href:m[2],className:'agent-link',onClick:(e)=>{ e.preventDefault(); window.location.hash=m[2]; window.dispatchEvent(new HashChangeEvent('hashchange')); }},m[1]) : p; }); };
+  /* the model writes light markdown: paragraphs, "- " lists, **bold**, and [Name](#/project/ID) links */
+  const inline=(text,key)=>{ const parts=String(text||'').split(/(\[[^\]]+\]\(#\/[a-z]+\/[^)]+\)|\*\*[^*]+\*\*)/g);
+    return parts.map((p,i)=>{ const m=p.match(/^\[([^\]]+)\]\((#\/[a-z]+\/[^)]+)\)$/); if(m) return React.createElement('a',{key:key+'-'+i,href:m[2],className:'agent-link',onClick:(e)=>{ e.preventDefault(); window.location.hash=m[2]; window.dispatchEvent(new HashChangeEvent('hashchange')); }},m[1]);
+      const b=p.match(/^\*\*([^*]+)\*\*$/); if(b) return React.createElement('b',{key:key+'-'+i},b[1]); return p; }); };
+  const render=(text)=>{ const lines=String(text||'').split('\n'); const out=[]; let list=null; let para=[];
+    const flushP=()=>{ if(para.length){ out.push(React.createElement('p',{key:'p'+out.length},inline(para.join(' '),'p'+out.length))); para=[]; } };
+    const flushL=()=>{ if(list){ out.push(React.createElement('ul',{key:'l'+out.length},list.map((it,j)=>React.createElement('li',{key:j},inline(it,'l'+out.length+'-'+j))))); list=null; } };
+    lines.forEach(ln=>{ const t=ln.trim(); const li=t.match(/^[-*\u2022]\s+(.*)$/); const h=t.match(/^#{1,3}\s+(.*)$/);
+      if(li){ flushP(); (list=list||[]).push(li[1]); return; } flushL();
+      if(!t){ flushP(); return; } if(h){ flushP(); out.push(React.createElement('div',{key:'h'+out.length,className:'take-h'},inline(h[1],'h'+out.length))); return; } para.push(t); });
+    flushL(); flushP(); return out; };
+  const [fbOpen,setFbOpen]=useState({}); const [fbText,setFbText]=useState({});
   return React.createElement(React.Fragment,null,
     React.createElement('div',{className:'drawer-scrim',onClick:onClose}),
     React.createElement('div',{className:'drawer agent'},
@@ -5156,10 +5197,18 @@ function AgentPanel({onClose, about}){
               React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setEditing(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',onClick:()=>{ react(t,{edit:editing.text.trim(), rating:(t.feedback||{}).rating||'down'}); setEditing(null); }},'Save my version'))) : null,
             (t.feedback||{}).edit&&!(editing&&editing.id===t.id)? React.createElement('div',{className:'take-edited'}, React.createElement('div',{className:'tiny',style:{fontWeight:800,letterSpacing:'.05em',textTransform:'uppercase',color:'var(--deep)',marginBottom:4}},'Your version'), React.createElement('div',{style:{whiteSpace:'pre-wrap'}},render((t.feedback||{}).edit))) : null,
             t.status==='answered'? React.createElement('div',{className:'take-fb'},
-              React.createElement('button',{className:'msg-act'+((t.feedback||{}).rating==='up'?' on':''),'data-tip':'Good take',onClick:()=>react(t,{rating:'up'})},'\ud83d\udc4d'),
-              React.createElement('button',{className:'msg-act'+((t.feedback||{}).rating==='down'?' on':''),'data-tip':'Off - I will say why',onClick:()=>react(t,{rating:'down'})},'\ud83d\udc4e'),
-              React.createElement('button',{className:'msg-act','data-tip':'Rewrite it the way it should have read - the strongest training signal there is',onClick:()=>setEditing({id:t.id,text:(t.feedback||{}).edit||t.answer||''})},'Rewrite'),
-              React.createElement('input',{className:'inp',style:{flex:1,padding:'4px 8px',fontSize:12.5},placeholder:'What it missed, overweighted, or got right (this trains it)',defaultValue:(t.feedback||{}).note||'',onBlur:e=>{ if(e.target.value!==((t.feedback||{}).note||'')) react(t,{note:e.target.value}); }})) : null))
+              React.createElement('div',{className:'take-fb-row'},
+                React.createElement('button',{className:'fb-btn'+((t.feedback||{}).rating==='up'?' on good':''),onClick:()=>react(t,{rating:'up'})},React.createElement(Icon,{name:'check',size:13}),' Good take'),
+                React.createElement('button',{className:'fb-btn'+((t.feedback||{}).rating==='down'?' on off':''),onClick:()=>{ react(t,{rating:'down'}); setFbOpen(Object.assign({},fbOpen,{[t.id]:true})); }},React.createElement(Icon,{name:'x',size:13}),' Off'),
+                React.createElement('button',{className:'fb-btn',onClick:()=>setEditing({id:t.id,text:(t.feedback||{}).edit||t.answer||''})},React.createElement(Icon,{name:'pencil',size:13}),' Rewrite'),
+                React.createElement('button',{className:'fb-btn'+(fbOpen[t.id]?' on':''),onClick:()=>setFbOpen(Object.assign({},fbOpen,{[t.id]:!fbOpen[t.id]}))},React.createElement(Icon,{name:'sparkles',size:13}),' Teach Cirri')),
+              fbOpen[t.id]? React.createElement('div',{className:'teach'},
+                React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'What did it miss, overweight, or get right? Written feedback shapes the next answer and becomes training data.'),
+                React.createElement('textarea',{className:'inp',rows:3,autoFocus:true,value:fbText[t.id]!==undefined? fbText[t.id] : ((t.feedback||{}).note||''),placeholder:'e.g. Jessie is on leave, so her unanswered mentions are not a signal. The real risk is the SFDC project - it depends on two people who are both late.',onChange:e=>setFbText(Object.assign({},fbText,{[t.id]:e.target.value}))}),
+                React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:6}},
+                  React.createElement('button',{className:'btn sm',onClick:()=>setFbOpen(Object.assign({},fbOpen,{[t.id]:false}))},'Cancel'),
+                  React.createElement('button',{className:'btn sm primary',disabled:!String(fbText[t.id]!==undefined? fbText[t.id] : ((t.feedback||{}).note||'')).trim(),onClick:()=>{ react(t,{note:String(fbText[t.id]!==undefined? fbText[t.id] : (t.feedback||{}).note||'').trim(), rating:(t.feedback||{}).rating||'down'}); setFbOpen(Object.assign({},fbOpen,{[t.id]:false})); }},'Send feedback'))) : null,
+              (t.feedback||{}).note&&!fbOpen[t.id]? React.createElement('div',{className:'take-note'}, React.createElement(Icon,{name:'sparkles',size:12}), React.createElement('span',null,(t.feedback||{}).note)) : null) : null))
           : React.createElement('div',{className:'chat-empty'}, React.createElement(Icon,{name:'sparkles',size:26,strokeWidth:1.5}), React.createElement('div',null,'Ask about who is ahead, who is behind, what is stalled, what needs a decision. It answers from the live record, as you are allowed to see it.'))),
         React.createElement('div',{className:'chat-composer'},
           err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
@@ -11757,7 +11806,7 @@ const AGENT_STARTERS_DEFAULT=[
 function agentStarters(meta){ const w=(meta&&meta.workspace)||{}; return (Array.isArray((w.agent||{}).starters)&&w.agent.starters.length)? w.agent.starters : AGENT_STARTERS_DEFAULT; }
 function SettingsAgentTab({isAdmin}){
   const [page,setPage]=useState('model'); const PM=usePerms();
-  const pages=[{id:'model',label:'Model',ic:'sparkles',body:React.createElement(SettingsAgent)},{id:'prompts',label:'Prompts',ic:'message-circle',body:React.createElement(SettingsAgentPrompts)},{id:'briefs',label:'Briefs',ic:'clock',body:React.createElement(SettingsAgentBriefs,{isAdmin})}].filter(p=> isAdmin || p.id==='prompts');
+  const pages=[{id:'model',label:'Model',ic:'sparkles',body:React.createElement(SettingsAgent)},{id:'prompts',label:'Prompts',ic:'message-circle',body:React.createElement(SettingsAgentPrompts)},{id:'briefs',label:'Briefs',ic:'clock',body:React.createElement(SettingsAgentBriefs,{isAdmin})},{id:'takes',label:'Takes',ic:'history',body:React.createElement(SettingsAgentTakes)}].filter(p=> isAdmin || p.id==='prompts');
   return React.createElement(SettingsSplit,{page,setPage,pages});
 }
 /* Prompts people start from. Editable so the company's own questions are the defaults. */
@@ -11800,6 +11849,42 @@ function SettingsAgentBriefs({isAdmin}){
             React.createElement('button',{className:'btn sm ghost icon','aria-label':'Remove',onClick:()=>write(briefs.filter((x,j)=>j!==i))},React.createElement(Icon,{name:'trash',size:13}))); }),
         React.createElement('div',{className:'ledit-row add'}, React.createElement('div',{style:{flex:'1 1 260px'}}, React.createElement(SearchSelect,{options:opts,value:'',placeholder:'Add a person\u2026',onChange:(id)=>{ if(id) add(id); }})))),
       !briefs.length? React.createElement('div',{className:'tiny muted',style:{marginTop:8}},'Nobody yet. Start with yourself and the department heads.') : null));
+}
+/* Every take, readable, with its feedback; and the two exports. */
+function SettingsAgentTakes(){
+  const g=useGtm(); const H=useHc(); const takes=(g.state.takes||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
+  const [q,setQ]=useState(''); const [only,setOnly]=useState('all'); const [open,setOpen]=useState({});
+  const nameOf=(em)=>{ const e=H.employees.find(x=>String(x.email||'').toLowerCase()===String(em||'').toLowerCase()); return e? e.name : em; };
+  const shown=takes.filter(t=> only==='all' || (only==='graded' && t.feedback && (t.feedback.rating||t.feedback.note||t.feedback.edit)) || (only==='rewritten' && t.feedback && t.feedback.edit) || (only==='briefs' && t.kind==='brief'))
+    .filter(t=>!q.trim() || (t.question+' '+(t.answer||'')+' '+((t.feedback||{}).note||'')+' '+nameOf(t.askedBy)).toLowerCase().includes(q.trim().toLowerCase()));
+  const dl=(name,text,type)=>{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; a.click(); };
+  const csv=()=>{ const rows=[['at','askedBy','kind','question','answer','rating','edited_answer','note','model','arm']].concat(takes.map(t=>[t.at,t.askedBy,t.kind||'ask',t.question,t.answer||'',(t.feedback||{}).rating||'',(t.feedback||{}).edit||'',(t.feedback||{}).note||'',t.model||'',t.arm||''])); dl('cirri-takes-'+todayStr()+'.csv', rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n'), 'text/csv'); };
+  /* the fine-tuning file: one line per example in the chat format OpenAI's tuning job reads.
+     A rewrite is the target answer; a good take is its own target. Notes become part of the instruction. */
+  const jsonl=()=>{ const lines=takes.filter(t=>t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.rating==='up')).map(t=>JSON.stringify({messages:[{role:'system',content:AGENT_SYSTEM+((t.feedback||{}).note? '\n\nGuidance from the leader on this kind of question: '+t.feedback.note : '')},{role:'user',content:t.question},{role:'assistant',content:(t.feedback.edit&&t.feedback.edit.trim())||t.answer}]})); dl('cirri-finetune-'+todayStr()+'.jsonl', lines.join('\n'), 'application/jsonl'); return lines.length; };
+  const trainable=takes.filter(t=>t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.rating==='up')).length;
+  return React.createElement('div',{className:'spage',style:{maxWidth:980}},
+    React.createElement(AdminCard,{title:'What it has learned from',desc:'Every take lives here, in the database, and nowhere else. Feedback changes answers two ways: the asker\u2019s own rewrites and graded takes are handed to the model as examples on every question, today; and a fine-tuning run, when you choose to do one, trains a model on the file below.'},
+      React.createElement(SettingRow,{label:'Training file',hint:trainable+' examples ready: rewrites and good takes. OpenAI\u2019s fine-tuning page takes this file as it is. Worth running from a few hundred examples.'},
+        React.createElement('div',{style:{display:'flex',gap:8,flexWrap:'wrap'}}, React.createElement('button',{className:'btn sm primary',disabled:!trainable,onClick:jsonl},'Download fine-tuning file (.jsonl)'), React.createElement('button',{className:'btn sm',disabled:!takes.length,onClick:csv},'Export everything (.csv)')))),
+    React.createElement('div',{className:'spread',style:{margin:'14px 0 10px',flexWrap:'wrap',gap:8}},
+      React.createElement('div',{className:'seg sm'}, [['all','All'],['graded','With feedback'],['rewritten','Rewritten'],['briefs','Briefs']].map(x=>React.createElement('button',{key:x[0],className:only===x[0]?'on':'',onClick:()=>setOnly(x[0])},x[1]))),
+      React.createElement('input',{className:'inp',style:{width:260},placeholder:'Search takes\u2026',value:q,onChange:e=>setQ(e.target.value)})),
+    shown.length? shown.slice(0,200).map(t=>{ const f=t.feedback||{}; const isOpen=!!open[t.id];
+      return React.createElement('div',{key:t.id,className:'take-row'},
+        React.createElement('div',{className:'take-row-h',onClick:()=>setOpen(Object.assign({},open,{[t.id]:!isOpen}))},
+          React.createElement('span',{className:'tiny muted',style:{flex:'0 0 auto',minWidth:110}},relTime(t.at)),
+          React.createElement('span',{style:{fontWeight:650,flex:'0 0 auto',minWidth:120}},nameOf(t.askedBy)),
+          React.createElement('span',{style:{flex:'1 1 auto',minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}, t.kind==='brief'? 'Brief \u00b7 '+String(t.answer||'').split('\n')[0].slice(0,90) : t.question),
+          f.rating==='up'? React.createElement('span',{className:'pill-s s-green'},'Good') : f.rating==='down'? React.createElement('span',{className:'pill-s s-red'},'Off') : null,
+          f.edit? React.createElement('span',{className:'pill-s s-navy'},'Rewritten') : null,
+          React.createElement(Icon,{name:isOpen?'chevron-up':'chevron-down',size:13})),
+        isOpen? React.createElement('div',{className:'take-row-b'},
+          React.createElement('div',{className:'klabel',style:{marginBottom:4}},'Question'), React.createElement('div',{style:{marginBottom:10,whiteSpace:'pre-wrap',overflowWrap:'anywhere'}},t.question),
+          React.createElement('div',{className:'klabel',style:{marginBottom:4}},'Answer'+(t.model?' \u00b7 '+t.model:'')), React.createElement('div',{style:{whiteSpace:'pre-wrap',overflowWrap:'anywhere',marginBottom:10}},t.answer||'\u2014'),
+          f.edit? [React.createElement('div',{key:'k',className:'klabel',style:{marginBottom:4}},'Rewritten by '+nameOf(t.askedBy)), React.createElement('div',{key:'v',className:'take-edited'},f.edit)] : null,
+          f.note? [React.createElement('div',{key:'k2',className:'klabel',style:{margin:'10px 0 4px'}},'Feedback'), React.createElement('div',{key:'v2',className:'take-note'},React.createElement(Icon,{name:'sparkles',size:12}),React.createElement('span',null,f.note))] : null) : null); })
+    : React.createElement('div',{className:'tiny muted',style:{padding:'12px 0'}}, takes.length? 'No takes match.' : 'No takes yet. The first question anyone asks lands here.'));
 }
 /* ---- Agent ---- */
 function SettingsAgent(){
