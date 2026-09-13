@@ -904,12 +904,14 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
    people who asked their OS for less of it. */
 @property --agent-a{syntax:'<angle>';inherits:false;initial-value:0deg}
 .agent-btn{position:relative;border:none;background:transparent;padding:0;cursor:pointer;border-radius:999px;flex:0 0 auto}
-.agent-btn::before{content:'';position:absolute;inset:0;border-radius:999px;padding:2px;background:conic-gradient(from var(--agent-a),#5cbfbd,#8b7cf6,#03243c,#5cbfbd);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:agent-spin 3.2s linear infinite}
-.agent-btn::after{content:'';position:absolute;inset:-3px;border-radius:999px;background:conic-gradient(from var(--agent-a),rgba(92,191,189,.35),rgba(139,124,246,.35),rgba(3,36,60,0),rgba(92,191,189,.35));filter:blur(7px);opacity:.75;z-index:-1;animation:agent-spin 3.2s linear infinite}
-.agent-btn:hover::after{opacity:.9}
+.agent-btn::before{content:'';position:absolute;inset:0;border-radius:999px;padding:2.5px;background:conic-gradient(from var(--agent-a),#5cbfbd 0deg,#8b7cf6 60deg,#03243c 120deg,rgba(3,36,60,.18) 190deg,rgba(139,124,246,.12) 280deg,#5cbfbd 360deg);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:agent-spin 2.6s linear infinite}
+.agent-btn::after{content:'';position:absolute;inset:-4px;border-radius:999px;background:conic-gradient(from var(--agent-a),rgba(92,191,189,.9) 0deg,rgba(139,124,246,.85) 60deg,rgba(3,36,60,.5) 120deg,rgba(3,36,60,0) 200deg,rgba(92,191,189,0) 330deg,rgba(92,191,189,.9) 360deg);filter:blur(8px);opacity:.7;z-index:-1;animation:agent-spin 2.6s linear infinite}
+.agent-btn:hover::after{opacity:1}
 .agent-btn-in{position:relative;display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:999px;background:var(--panel);color:var(--deep);font-size:12.5px;font-weight:800;letter-spacing:.01em}
 .agent-word{background:linear-gradient(95deg,#2a9d9b,#6d5ef0 55%,#03243c);-webkit-background-clip:text;background-clip:text;color:transparent}
 .agent-btn-in svg{stroke:url(#agentGrad)}
+.agent-btn-in svg path:first-of-type{fill:url(#agentGrad);fill-opacity:.22}
+.dtab-ask svg path:first-of-type{fill:url(#agentGrad);fill-opacity:.22}
 .agent-h{border-bottom:2px solid transparent;border-image:linear-gradient(90deg,#5cbfbd,#8b7cf6,#03243c) 1}
 .agent-orb{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#5cbfbd,#6d5ef0 60%,#03243c);box-shadow:0 0 0 4px rgba(109,94,240,.12);flex:0 0 auto}
 @keyframes agent-spin{to{--agent-a:360deg}}
@@ -12120,7 +12122,7 @@ function App(){
                       view===n.id&&React.createElement(Icon,{name:'check',size:13,style:{marginLeft:'auto',color:'var(--accent-700)'}}))))) : null)
                   : (function(){ const n=navList.find(x=>x.id===item.id); return n? tbTab(n,()=>goHcView(n)) : null; })()),
                 React.createElement('button',{key:'arr',className:'tb-arrange','data-tip':'Arrange tabs','aria-label':'Arrange tabs',onClick:()=>setArrange('hc')},React.createElement(Icon,{name:'menu',size:14})))),
-        React.createElement('svg',{width:0,height:0,style:{position:'absolute'},'aria-hidden':true}, React.createElement('defs',null, React.createElement('linearGradient',{id:'agentGrad',x1:'0',y1:'0',x2:'1',y2:'1'}, React.createElement('stop',{offset:'0',stopColor:'#2a9d9b'}), React.createElement('stop',{offset:'.55',stopColor:'#6d5ef0'}), React.createElement('stop',{offset:'1',stopColor:'#03243c'})))),
+        React.createElement('svg',{width:0,height:0,style:{position:'absolute'},'aria-hidden':true}, React.createElement('defs',null, React.createElement('linearGradient',{id:'agentGrad',gradientUnits:'userSpaceOnUse',x1:'2',y1:'2',x2:'22',y2:'22'}, React.createElement('stop',{offset:'0',stopColor:'#2a9d9b'}), React.createElement('stop',{offset:'.55',stopColor:'#6d5ef0'}), React.createElement('stop',{offset:'1',stopColor:'#03243c'})))),
         React.createElement('div',{className:'tb-right'},
           PM.can('agent.ask').allow? React.createElement('button',{className:'agent-btn',onClick:()=>setAgentOpen(true),'aria-label':'Ask Cirri'},React.createElement('span',{className:'agent-btn-in'},React.createElement(Icon,{name:'sparkles',size:14}),React.createElement('span',{className:'agent-word'},'Ask Cirri'))) : null,
           React.createElement('div',{className:'navhist'},
