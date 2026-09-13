@@ -14,6 +14,7 @@
 <!-- Firebase (loads on a real host; preview falls back to local-only mode automatically) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-functions-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
 <!-- Source Sans 3 (Toast's body typeface) -->
@@ -898,6 +899,38 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .tb-company span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .login-company{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px;padding:6px 12px 6px 6px;border:1px solid var(--line);border-radius:999px;background:#fff}
 [data-tip].tip-up:hover::after{top:auto;bottom:calc(100% + 7px)}
+/* The AI identity: teal into violet into navy. A thin ring travels around the Ask
+   button; the same gradient sets the wordmark and the panel header. Motion stops for
+   people who asked their OS for less of it. */
+@property --agent-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.agent-btn{position:relative;border:none;background:transparent;padding:0;cursor:pointer;border-radius:999px;flex:0 0 auto}
+.agent-btn::before{content:'';position:absolute;inset:0;border-radius:999px;padding:2px;background:conic-gradient(from var(--agent-a),#5cbfbd,#8b7cf6,#03243c,#5cbfbd);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:agent-spin 3.2s linear infinite}
+.agent-btn::after{content:'';position:absolute;inset:-3px;border-radius:999px;background:conic-gradient(from var(--agent-a),rgba(92,191,189,.35),rgba(139,124,246,.35),rgba(3,36,60,0),rgba(92,191,189,.35));filter:blur(7px);opacity:.75;z-index:-1;animation:agent-spin 3.2s linear infinite}
+.agent-btn:hover::after{opacity:.9}
+.agent-btn-in{position:relative;display:inline-flex;align-items:center;gap:7px;padding:8px 14px 8px 12px;border-radius:999px;background:var(--panel);color:var(--deep);font-size:12.5px;font-weight:800;letter-spacing:.01em}
+.agent-word{background:linear-gradient(95deg,#2a9d9b,#6d5ef0 55%,#03243c);-webkit-background-clip:text;background-clip:text;color:transparent}
+.agent-btn-in svg{stroke:url(#agentGrad)}
+.agent-h{border-bottom:2px solid transparent;border-image:linear-gradient(90deg,#5cbfbd,#8b7cf6,#03243c) 1}
+.agent-orb{width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;background:linear-gradient(135deg,#5cbfbd,#6d5ef0 60%,#03243c);box-shadow:0 0 0 4px rgba(109,94,240,.12);flex:0 0 auto}
+@keyframes agent-spin{to{--agent-a:360deg}}
+@media (prefers-reduced-motion:reduce){.agent-btn::before,.agent-btn::after{animation:none}}
+.drawer.agent{width:min(680px,94vw);z-index:86}
+.drawer.agent .chat{flex:1;min-height:0}
+.take{margin:10px 0 14px}
+.take-q{font-weight:700;font-size:13.5px;color:var(--ink);background:#eef2f6;border-radius:10px 10px 10px 2px;padding:8px 12px;display:inline-block;max-width:92%}
+.take-a{font-size:14px;line-height:1.55;color:var(--ink);padding:10px 2px 4px}
+.take-fb{display:flex;align-items:center;gap:6px;margin-top:4px}
+.take-fb .msg-act.on{background:var(--accent-bg);color:var(--deep)}
+.agent-link{color:var(--accent-700);font-weight:650;text-decoration:underline}
+.take-edit{margin:6px 0}
+.take-edited{border-left:3px solid var(--deep);padding:6px 10px;margin:6px 0;background:#f7fafc;border-radius:0 8px 8px 0;font-size:13.5px;line-height:1.5}
+.starters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.starter{border:1px solid var(--line);background:#fff;border-radius:999px;padding:5px 11px;font-size:12px;font-weight:650;color:var(--ink-2);cursor:pointer}
+.starter:hover{border-color:#8b7cf6;color:var(--deep)}
+.dtab-ask{margin-left:auto;gap:5px}
+.dtab-ask svg{stroke:url(#agentGrad)}
+.take.brief{border:1px solid var(--line);border-radius:12px;padding:10px 14px;background:#fbfbfe}
+.take-brief-h{font-weight:800;font-size:13px;margin-bottom:4px}
 .perm-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fbfcfd;border-bottom:1px solid var(--line)}
 .perm-bulk{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
 .perm-bulk .btn.sm.ghost{padding:2px 7px;font-size:11px;text-transform:none;letter-spacing:0}
@@ -1975,8 +2008,8 @@ const firebaseAvailable = (typeof firebase !== 'undefined');
 
 function arrToMap(arr){ const m={}; (arr||[]).forEach(x=>{ if(x&&x.id) m[x.id]=x; }); return m; }
 function mapToArr(m){ return m ? Object.keys(m).map(k=>m[k]) : []; }
-function blankState(){ return {meta:{appTitle:'Cirri'},people:[],okrs:[],projects:[],tasks:[],events:[],activity:[],hc_employees:[],hc_reqs:[],hc_attritionLog:[],hc_leaders:[],hc_history:[],feature_requests:[],comments:[],notes:[],checkins:[],hcSettings:{},hc_activity:[],approvals:[],wbr_metrics:[],wbr_entries:[],wbr_periods:[],wbrSettings:{}}; }
-function normState(st){ const b=blankState(); if(!st||typeof st!=='object') return b; return { meta:st.meta||b.meta, people:Array.isArray(st.people)?st.people:[], okrs:Array.isArray(st.okrs)?st.okrs:[], projects:Array.isArray(st.projects)?st.projects:[], tasks:Array.isArray(st.tasks)?st.tasks:[], events:Array.isArray(st.events)?st.events:[], activity:Array.isArray(st.activity)?st.activity:[], hc_employees:Array.isArray(st.hc_employees)?st.hc_employees:[], hc_reqs:Array.isArray(st.hc_reqs)?st.hc_reqs:[], hc_attritionLog:Array.isArray(st.hc_attritionLog)?st.hc_attritionLog:[], hc_leaders:Array.isArray(st.hc_leaders)?st.hc_leaders:[], hc_history:Array.isArray(st.hc_history)?st.hc_history:[], feature_requests:Array.isArray(st.feature_requests)?st.feature_requests:[], comments:Array.isArray(st.comments)?st.comments:[], hcSettings:(st.hcSettings&&typeof st.hcSettings==='object')?st.hcSettings:{}, hc_activity:Array.isArray(st.hc_activity)?st.hc_activity:[], approvals:Array.isArray(st.approvals)?st.approvals:[], notes:Array.isArray(st.notes)?st.notes:[], checkins:Array.isArray(st.checkins)?st.checkins:[], sessions:Array.isArray(st.sessions)?st.sessions:[], wbr_metrics:Array.isArray(st.wbr_metrics)?st.wbr_metrics:[], wbr_entries:Array.isArray(st.wbr_entries)?st.wbr_entries:[], wbr_periods:Array.isArray(st.wbr_periods)?st.wbr_periods:[], wbrSettings:(st.wbrSettings&&typeof st.wbrSettings==='object')?st.wbrSettings:{} }; }
+function blankState(){ return {meta:{appTitle:'Cirri'},people:[],okrs:[],projects:[],tasks:[],events:[],activity:[],hc_employees:[],hc_reqs:[],hc_attritionLog:[],hc_leaders:[],hc_history:[],feature_requests:[],comments:[],notes:[],checkins:[],takes:[],hcSettings:{},hc_activity:[],approvals:[],wbr_metrics:[],wbr_entries:[],wbr_periods:[],wbrSettings:{}}; }
+function normState(st){ const b=blankState(); if(!st||typeof st!=='object') return b; return { meta:st.meta||b.meta, people:Array.isArray(st.people)?st.people:[], okrs:Array.isArray(st.okrs)?st.okrs:[], projects:Array.isArray(st.projects)?st.projects:[], tasks:Array.isArray(st.tasks)?st.tasks:[], events:Array.isArray(st.events)?st.events:[], activity:Array.isArray(st.activity)?st.activity:[], hc_employees:Array.isArray(st.hc_employees)?st.hc_employees:[], hc_reqs:Array.isArray(st.hc_reqs)?st.hc_reqs:[], hc_attritionLog:Array.isArray(st.hc_attritionLog)?st.hc_attritionLog:[], hc_leaders:Array.isArray(st.hc_leaders)?st.hc_leaders:[], hc_history:Array.isArray(st.hc_history)?st.hc_history:[], feature_requests:Array.isArray(st.feature_requests)?st.feature_requests:[], comments:Array.isArray(st.comments)?st.comments:[], hcSettings:(st.hcSettings&&typeof st.hcSettings==='object')?st.hcSettings:{}, hc_activity:Array.isArray(st.hc_activity)?st.hc_activity:[], approvals:Array.isArray(st.approvals)?st.approvals:[], notes:Array.isArray(st.notes)?st.notes:[], checkins:Array.isArray(st.checkins)?st.checkins:[], sessions:Array.isArray(st.sessions)?st.sessions:[], takes:Array.isArray(st.takes)?st.takes:[], wbr_metrics:Array.isArray(st.wbr_metrics)?st.wbr_metrics:[], wbr_entries:Array.isArray(st.wbr_entries)?st.wbr_entries:[], wbr_periods:Array.isArray(st.wbr_periods)?st.wbr_periods:[], wbrSettings:(st.wbrSettings&&typeof st.wbrSettings==='object')?st.wbrSettings:{} }; }
 function wbrFreshSeed(){ const w=JSON.parse(JSON.stringify({metrics:WBR_SEED.metrics, entries:WBR_SEED.entries, periods:WBR_SEED.periods, settings:WBR_SEED.settings})); try{ const byId={}; w.metrics.forEach(m=>{byId[m.id]=m;}); wbrBuildFinance(byId,{}).metrics.forEach(m=>w.metrics.push(m)); }catch(e){} return w; }
 function freshSeed(){ const s=JSON.parse(JSON.stringify(SEED)); try{ const hc=hcFreshSeed(); s.hc_employees=hc.employees; s.hc_reqs=hc.reqs; s.hc_attritionLog=hc.attritionLog; s.hc_leaders=hc.leaders; s.hc_history=hc.history||[]; s.hcSettings=hc.settings; }catch(e){} try{ const w=wbrFreshSeed(); s.wbr_metrics=w.metrics; s.wbr_entries=w.entries; s.wbr_periods=w.periods; s.wbrSettings=w.settings; }catch(e){} return s; }
 
@@ -2158,7 +2191,7 @@ function StoreProvider({children}){
           ref.on('value', snap=>{
             const v = snap.val()||{};
             setState({ meta:v.meta||{appTitle:'Cirri'}, people:mapToArr(v.people), okrs:mapToArr(v.okrs), projects:mapToArr(v.projects), tasks:mapToArr(v.tasks), events:mapToArr(v.events), activity:mapToArr(v.activity),
-              hc_employees:mapToArr(v.hc_employees), hc_reqs:mapToArr(v.hc_reqs), hc_attritionLog:mapToArr(v.hc_attritionLog), hc_leaders:mapToArr(v.hc_leaders), hc_history:mapToArr(v.hc_history), feature_requests:mapToArr(v.feature_requests), comments:mapToArr(v.comments), hcSettings:v.hcSettings||{}, hc_activity:mapToArr(v.hc_activity), approvals:mapToArr(v.approvals), notes:mapToArr(v.notes), checkins:mapToArr(v.checkins), sessions:mapToArr(v.sessions), wbr_metrics:mapToArr(v.wbr_metrics), wbr_entries:mapToArr(v.wbr_entries), wbr_periods:mapToArr(v.wbr_periods), wbrSettings:v.wbrSettings||{} });
+              hc_employees:mapToArr(v.hc_employees), hc_reqs:mapToArr(v.hc_reqs), hc_attritionLog:mapToArr(v.hc_attritionLog), hc_leaders:mapToArr(v.hc_leaders), hc_history:mapToArr(v.hc_history), feature_requests:mapToArr(v.feature_requests), comments:mapToArr(v.comments), hcSettings:v.hcSettings||{}, hc_activity:mapToArr(v.hc_activity), approvals:mapToArr(v.approvals), notes:mapToArr(v.notes), checkins:mapToArr(v.checkins), sessions:mapToArr(v.sessions), takes:mapToArr(v.takes), wbr_metrics:mapToArr(v.wbr_metrics), wbr_entries:mapToArr(v.wbr_entries), wbr_periods:mapToArr(v.wbr_periods), wbrSettings:v.wbrSettings||{} });
             setMode('cloud'); setSync('live');
           }, err=>{ console.error(err); setSync('error'); });
         };
@@ -3229,7 +3262,7 @@ function TaskDrawer({task}){
       ro? React.createElement('span',{className:'pill-s s-grey','data-tip':ro},React.createElement(Icon,{name:'lock',size:11}),' Read only') : React.createElement('button',{className:'btn sm',onClick:()=>setEdit(true)},'Edit'),
       GD.shown&&React.createElement('button',{className:'btn sm icon danger','data-tip':GD.tip,onClick:()=>setDel(true)},React.createElement(Icon,{name:'trash',size:14})),
       React.createElement('button',{className:'x',onClick:nav.closeDrawer},'\u00d7')),
-    React.createElement('div',{className:'dtabs'}, React.createElement('button',{className:'dtab'+(pane==='details'?' on':''),onClick:()=>setPane('details')},'Details'), React.createElement('button',{className:'dtab'+(pane==='chat'?' on':''),onClick:()=>setPane('chat')},React.createElement(Icon,{name:'message-circle',size:13}),' Conversation', msgCount? React.createElement('span',{className:'dtab-n'},msgCount):null), React.createElement('button',{className:'dtab'+(pane==='notes'?' on':''),onClick:()=>setPane('notes')},React.createElement(Icon,{name:'pencil',size:13}),' Notes', noteCount? React.createElement('span',{className:'dtab-n'},noteCount):null)),
+    React.createElement('div',{className:'dtabs'}, React.createElement('button',{className:'dtab'+(pane==='details'?' on':''),onClick:()=>setPane('details')},'Details'), React.createElement('button',{className:'dtab'+(pane==='chat'?' on':''),onClick:()=>setPane('chat')},React.createElement(Icon,{name:'message-circle',size:13}),' Conversation', msgCount? React.createElement('span',{className:'dtab-n'},msgCount):null), React.createElement('button',{className:'dtab'+(pane==='notes'?' on':''),onClick:()=>setPane('notes')},React.createElement(Icon,{name:'pencil',size:13}),' Notes', noteCount? React.createElement('span',{className:'dtab-n'},noteCount):null), PM.can('agent.ask').allow? React.createElement('button',{className:'dtab dtab-ask',onClick:()=>window.dispatchEvent(new CustomEvent('cirri-ask',{detail:{type:'task',id:task.id,question:'What is the story with the task \u201c'+task.title+'\u201d? Is it on track, and what should happen next?'}}))},React.createElement(Icon,{name:'sparkles',size:13}),React.createElement('span',{className:'agent-word'},'Ask about this')) : null),
     pane==='chat'? React.createElement('div',{className:'db chatdb'}, React.createElement(ConversationPane,{entityType:'task',entityId:task.id}))
     : pane==='notes'? React.createElement('div',{className:'db chatdb'}, React.createElement(NotesPane,{kind:'task',entity:task}))
     : React.createElement('div',{className:'db'},
@@ -3307,7 +3340,7 @@ function ProjectDrawer({project}){
       ro? React.createElement('span',{className:'pill-s s-grey','data-tip':ro},React.createElement(Icon,{name:'lock',size:11}),' Read only') : React.createElement('button',{className:'btn sm',onClick:()=>setEdit(true)},'Edit'),
       GD.shown&&React.createElement('button',{className:'btn sm icon danger','data-tip':GD.tip,onClick:()=>setDel(true)},React.createElement(Icon,{name:'trash',size:14})),
       React.createElement('button',{className:'x',onClick:nav.closeDrawer},'\u00d7')),
-    React.createElement('div',{className:'dtabs'}, React.createElement('button',{className:'dtab'+(pane==='details'?' on':''),onClick:()=>setPane('details')},'Details'), React.createElement('button',{className:'dtab'+(pane==='chat'?' on':''),onClick:()=>setPane('chat')},React.createElement(Icon,{name:'message-circle',size:13}),' Conversation', msgCount? React.createElement('span',{className:'dtab-n'},msgCount):null), React.createElement('button',{className:'dtab'+(pane==='notes'?' on':''),onClick:()=>setPane('notes')},React.createElement(Icon,{name:'pencil',size:13}),' Notes', noteCount? React.createElement('span',{className:'dtab-n'},noteCount):null)),
+    React.createElement('div',{className:'dtabs'}, React.createElement('button',{className:'dtab'+(pane==='details'?' on':''),onClick:()=>setPane('details')},'Details'), React.createElement('button',{className:'dtab'+(pane==='chat'?' on':''),onClick:()=>setPane('chat')},React.createElement(Icon,{name:'message-circle',size:13}),' Conversation', msgCount? React.createElement('span',{className:'dtab-n'},msgCount):null), React.createElement('button',{className:'dtab'+(pane==='notes'?' on':''),onClick:()=>setPane('notes')},React.createElement(Icon,{name:'pencil',size:13}),' Notes', noteCount? React.createElement('span',{className:'dtab-n'},noteCount):null), PM.can('agent.ask').allow? React.createElement('button',{className:'dtab dtab-ask',onClick:()=>window.dispatchEvent(new CustomEvent('cirri-ask',{detail:{type:'project',id:project.id,question:'What is the story with the project \u201c'+project.name+'\u201d? Is it on track, what is in the way, and what should happen next?'}}))},React.createElement(Icon,{name:'sparkles',size:13}),React.createElement('span',{className:'agent-word'},'Ask about this')) : null),
     pane==='chat'? React.createElement('div',{className:'db chatdb'}, React.createElement(ConversationPane,{entityType:'project',entityId:project.id}))
     : pane==='notes'? React.createElement('div',{className:'db chatdb'}, React.createElement(NotesPane,{kind:'project',entity:project}))
     : React.createElement('div',{className:'db'},
@@ -4405,7 +4438,7 @@ function RCompletedRow({item, kind, onPick, showOwner}){
               React.createElement('span',{className:'linkish',style:{fontStyle:'italic'},onClick:startEdit},'+ Add completion note'))));
 }
 function RhythmView({person, onPick, all, onlyIds}){
-  const { projects, tasks, A, maps, events, checkins } = useGtm();
+  const { projects, tasks, A, maps, events, checkins } = useGtm(); const PMa=usePerms();
   const [tray,setTray]=useState(null); const [openProj,setOpenProj]=useState({});
   const cc=useContext(CollapseCtx);
   useEffect(()=>{ if(!cc||!cc.n) return; const o={}; if(cc.expand) projects.filter(isActiveProj).forEach(p=>{ o[p.id]=true; }); setOpenProj(o); },[cc&&cc.n]);
@@ -4992,6 +5025,145 @@ function CheckinBlock({project}){
       React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end'}}, React.createElement('button',{className:'btn sm',onClick:()=>setF(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',disabled:!String(f.moved||'').trim(),onClick:save},f.id?'Save':'Post check-in'))) : null,
     thisWeek&&!(f&&f.id===thisWeek.id)? card(thisWeek,true) : (!f&&isActiveProj(project)? React.createElement('div',{className:'tiny muted',style:{marginBottom:6}}, mayPost? 'No check-in yet this week.' : 'No check-in this week from the owner.') : null),
     all.filter(c=>c.id!==(thisWeek&&thisWeek.id)).slice(0,4).map(c=>card(c,false)));
+}
+
+/* ============================================================
+   THE AGENT  -  snapshot, takes, and the Ask Cirri panel
+   ------------------------------------------------------------
+   The snapshot is the company as one person is allowed to see it: the same filtered
+   lists every page reads, plus computed signals that are facts (on-time rate, pushes,
+   reply time, stale days, missing check-ins). No weights, no verdicts - judgement is
+   the model's, learned from feedback. A take is one answer with what it saw and how
+   the person reacted; the takes collection is the training corpus.
+   ============================================================ */
+function cirriSnapshot(g, H, PM, W, opts){
+  opts=opts||{}; const now=Date.now(); const today=todayStr(); const week=weekMonday(today);
+  const people=g.people||[]; const emps=(H&&H.employees)||[]; const byPerson={}; people.forEach(p=>{ byPerson[p.id]=p; });
+  const lbl={}; ((H&&H.effLeaders)||[]).forEach(l=>{ lbl[l.id]=l.label; });
+  const projects=g.projects||[], tasks=g.tasks||[], okrs=g.okrs||[], comments=g.comments||[], events=g.events||[], checkins=g.checkins||[];
+  const daysBetween=(a,b)=>Math.round((new Date(b).getTime()-new Date(a).getTime())/86400000);
+  const pushes={}; events.forEach(e=>{ if(e.type==='date_change') pushes[e.entityId]=(pushes[e.entityId]||0)+1; });
+  const since90=new Date(now-90*86400000).toISOString();
+  /* per project */
+  const projOut=projects.map(p=>{ const T=tasks.filter(t=>(t.projectIds||[]).includes(p.id)); const open=T.filter(t=>t.status!=='done'&&t.status!=='abandoned');
+    const ci=checkinFor(checkins,p.id,week); const lastCi=(checkins||[]).filter(c=>c.projectId===p.id).sort((a,b)=>String(b.week).localeCompare(String(a.week)))[0]||null;
+    return {id:p.id, name:p.name, ownerId:p.ownerId||'', objectiveIds:p.okrIds||p.objectiveIds||[], queue:isActiveProj(p)?'active':(isClosedStatus(p.status)?'closed':'queued'), status:p.status, health:p.health||'', dueDate:p.dueDate||'',
+      overdueDays: (p.dueDate && isActiveProj(p) && !isClosedStatus(p.status) && p.dueDate<today)? daysBetween(p.dueDate,today) : 0,
+      datePushes:pushes[p.id]||0, daysSinceActivity: p.lastActivity? daysBetween(p.lastActivity.slice(0,10),today) : null, stale: isStale(p.lastActivity,p.status),
+      tasksOpen:open.length, tasksDone:T.filter(t=>t.status==='done').length, tasksOverdue:open.filter(t=>t.dueDate&&t.dueDate<today).length,
+      checkinThisWeek: !!ci, lastCheckin: lastCi? {week:lastCi.week, health:lastCi.health, moved:lastCi.moved, blockers:lastCi.blockers||''} : null,
+      sensitive: !!p.sensitive, impact:p.impact||'', effort:p.effort||p.loe||''}; });
+  const projById={}; projOut.forEach(p=>{ projById[p.id]=p; });
+  /* per task */
+  const taskOut=tasks.map(t=>({id:t.id, title:t.title, projectIds:t.projectIds||[], ownerIds:t.ownerIds||[], status:t.status, dueDate:t.dueDate||'', overdueDays:(t.dueDate&&t.status!=='done'&&t.status!=='abandoned'&&t.dueDate<today)? daysBetween(t.dueDate,today) : 0, blocker:t.blocker||'', lastActivity:t.lastActivity||t.updatedAt||'', doneAt:t.doneAt||t.completedAt||''}));
+  /* per person: facts only */
+  const ownsFn=(pid)=>(et,eid)=> et==='project'? ((projById[eid]||{}).ownerId===pid) : et==='task'? ((tasks.find(x=>x.id===eid)||{}).ownerIds||[]).includes(pid) : false;
+  const peopleOut=people.map(p=>{ const e=emps.find(x=>x.id===p.id)||{}; const owned=projOut.filter(x=>x.ownerId===p.id); const active=owned.filter(x=>x.queue==='active');
+    const mine=taskOut.filter(t=>t.ownerIds.includes(p.id)); const openT=mine.filter(t=>t.status!=='done'&&t.status!=='abandoned');
+    const done90=tasks.filter(t=>(t.ownerIds||[]).includes(p.id)&&t.status==='done'&&String(t.doneAt||t.completedAt||t.lastActivity||'')>=since90);
+    const onTime=done90.filter(t=>!t.dueDate || String(t.doneAt||t.completedAt||t.lastActivity||'').slice(0,10)<=t.dueDate).length;
+    const rs=replyStats(p.id, comments, ownsFn(p.id));
+    return {id:p.id, name:p.name, title:e.title||e.role||'', level:e.level? hcLevelName(e.level) : '', levelRank:e.level||null, org:lbl[e.leaderId]||'', managerId:e.managerId||'', onLeave:!!e.onLeave, startDate:e.startDate||'',
+      activeProjectsOwned:active.length, projectsOwned:owned.length, openTasks:openT.length, overdueTasks:openT.filter(t=>t.overdueDays>0).length, overdueProjects:active.filter(x=>x.overdueDays>0).length,
+      datePushesOnOwned:owned.reduce((n,x)=>n+x.datePushes,0), staleActiveProjects:active.filter(x=>x.stale).length, checkinsMissingThisWeek:active.filter(x=>!x.checkinThisWeek).length,
+      tasksDone90d:done90.length, onTimeRate90d: done90.length? Math.round(100*onTime/done90.length) : null,
+      repliesAsked:rs.asked, repliesAnswered:rs.answered, medianReplyHours: rs.medianHours==null? null : Math.round(rs.medianHours*10)/10, unansweredOver48h:rs.open.length}; });
+  /* objectives */
+  const okrOut=okrs.map(o=>{ const ps=projOut.filter(p=>(p.objectiveIds||[]).includes(o.id)); const crit=(o.successCriteria||[]); const covered=new Set(); tasks.forEach(t=>(t.criteriaIds||[]).forEach(c=>covered.add(c))); projects.forEach(p=>(p.criteriaIds||[]).forEach(c=>covered.add(c)));
+    return {id:o.id, name:o.name||o.title, ownerId:o.ownerId||'', target:o.target||o.targetLabel||'', health:o.health||'', criteria:crit.map(c=>({id:c.id,text:c.text,covered:covered.has(c.id)})), projectIds:ps.map(p=>p.id), activeProjects:ps.filter(p=>p.queue==='active').length}; });
+  /* metrics: latest reading and goal; judgement of on/off plan is left to the reader for now */
+  const metricsOut=(W&&W.metrics? W.metrics : []).map(m=>{ const es=(W.entries||[]).filter(e=>e.mid===m.id).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))); const last=es[0]||null; let goal=null; try{ goal=last? (wbrGoalInfo(m,last.pk)||{}).goal : null; }catch(e){}
+    return {id:m.id, name:m.name, section:m.sec||'', ownerId:m.ownerId||'', cadence:m.cad||'', direction:m.dir||'', latest: last? {period:last.pk, week:last.wk, value:last.v, goal} : null}; });
+  /* recent conversation and change, bounded */
+  const recentComments=comments.slice().sort((a,b)=>String(b.createdAt).localeCompare(String(a.createdAt))).slice(0,opts.comments||80).map(c=>({at:c.createdAt, authorId:c.authorId, entityType:c.entityType, entityId:c.entityId, text:String(c.text||'').slice(0,400), resolved:!!c.resolved, replyTo:c.parentId||''}));
+  const recentActivity=(g.activity||[]).slice().sort((a,b)=>String(b.at||b.ts||'').localeCompare(String(a.at||a.ts||''))).slice(0,opts.activity||80).map(a=>({at:a.at||a.ts, actorId:a.actorId, action:a.action, entityType:a.entityType, entityId:a.entityId, entityName:a.entityName||'', changes:(a.changes||[]).slice(0,4)}));
+  const checkinsWeek=checkins.filter(c=>c.week===week).map(c=>({projectId:c.projectId, authorId:c.authorId, health:c.health, moved:c.moved, blockers:c.blockers||''}));
+  return {
+    generatedAt:new Date().toISOString(), today, weekOf:week, build:BUILD, workspace:WSR.name||'', viewer: opts.viewer||null,
+    counts:{people:peopleOut.length, projects:projOut.length, activeProjects:projOut.filter(p=>p.queue==='active').length, tasks:taskOut.length, objectives:okrOut.length, metrics:metricsOut.length},
+    definitions:{ stale:'no update on open work for '+WSR.staleDays+'+ days', checkin:'the owner posts once a week on each active project: what moved, what is in the way, on track or not', onTimeRate90d:'share of tasks completed in the last 90 days that were done on or before their due date', medianReplyHours:'median hours from an @mention or a comment on their work to their first reply, last 90 days', unansweredOver48h:'requests to them with no reply after two days', datePushes:'times a due date was moved later' },
+    people:peopleOut, objectives:okrOut, projects:projOut, tasks:taskOut, metrics:metricsOut, checkinsThisWeek:checkinsWeek, recentComments, recentActivity };
+}
+/* A short text rendering for the model: compact, one line per entity, with ids for citation. */
+function snapshotText(s){
+  const L=[]; const name=(id)=>{ const p=(s.people||[]).find(x=>x.id===id); return p? p.name : (id||'unassigned'); };
+  L.push('WORKSPACE '+(s.workspace||'')+' | today '+s.today+' | week of '+s.weekOf+' | '+s.counts.people+' people, '+s.counts.activeProjects+' active of '+s.counts.projects+' projects, '+s.counts.tasks+' tasks, '+s.counts.objectives+' objectives, '+s.counts.metrics+' metrics');
+  L.push('DEFINITIONS '+Object.keys(s.definitions).map(k=>k+': '+s.definitions[k]).join('; '));
+  L.push('\nPEOPLE (id | name | title | level | org | manager | active projects owned | open tasks | overdue tasks | overdue projects | date pushes on owned | stale active | check-ins missing this week | tasks done 90d | on-time % | median reply h | unanswered >48h | on leave)');
+  s.people.forEach(p=>L.push([p.id,p.name,p.title,p.level,p.org,name(p.managerId),p.activeProjectsOwned,p.openTasks,p.overdueTasks,p.overdueProjects,p.datePushesOnOwned,p.staleActiveProjects,p.checkinsMissingThisWeek,p.tasksDone90d,p.onTimeRate90d==null?'-':p.onTimeRate90d,p.medianReplyHours==null?'-':p.medianReplyHours,p.unansweredOver48h,p.onLeave?'leave':''].join(' | ')));
+  L.push('\nOBJECTIVES (id | name | owner | health | criteria covered/total | active projects)');
+  s.objectives.forEach(o=>L.push([o.id,o.name,name(o.ownerId),o.health,o.criteria.filter(c=>c.covered).length+'/'+o.criteria.length,o.activeProjects].join(' | ')));
+  L.push('\nPROJECTS (id | name | owner | queue | status | health | due | overdue days | pushes | days since activity | stale | open/done/overdue tasks | check-in this week | last check-in)');
+  s.projects.forEach(p=>L.push([p.id,p.name,name(p.ownerId),p.queue,p.status,p.health,p.dueDate||'-',p.overdueDays,p.datePushes,p.daysSinceActivity==null?'-':p.daysSinceActivity,p.stale?'stale':'',p.tasksOpen+'/'+p.tasksDone+'/'+p.tasksOverdue,p.checkinThisWeek?'yes':'no',p.lastCheckin? (p.lastCheckin.week+' '+p.lastCheckin.health+': '+String(p.lastCheckin.moved).slice(0,120)+(p.lastCheckin.blockers?' | blocked by: '+String(p.lastCheckin.blockers).slice(0,120):'')) : '-'].join(' | ')));
+  L.push('\nTASKS (id | title | projects | owners | status | due | overdue days | blocker)');
+  s.tasks.filter(t=>t.status!=='done'&&t.status!=='abandoned').forEach(t=>L.push([t.id,t.title,t.projectIds.join(','),t.ownerIds.map(name).join(','),t.status,t.dueDate||'-',t.overdueDays,t.blocker||''].join(' | ')));
+  if(s.metrics.length){ L.push('\nMETRICS (id | name | section | owner | cadence | latest period | value | goal)'); s.metrics.forEach(m=>L.push([m.id,m.name,m.section,name(m.ownerId),m.cadence,m.latest?m.latest.period:'-',m.latest?m.latest.value:'-',m.latest&&m.latest.goal!=null?m.latest.goal:'-'].join(' | '))); }
+  L.push('\nRECENT COMMENTS (at | author | on | text)'); s.recentComments.forEach(c=>L.push([c.at,name(c.authorId),c.entityType+':'+c.entityId,c.text.replace(/\n/g,' ')].join(' | ')));
+  L.push('\nRECENT CHANGES (at | actor | action | on)'); s.recentActivity.forEach(a=>L.push([a.at,name(a.actorId),a.action,a.entityType+':'+a.entityId+' '+a.entityName].join(' | ')));
+  return L.join('\n');
+}
+const AGENT_SYSTEM=`You are Cirri, the operating brain of a company. You are given the current state of the company as the person asking is allowed to see it: people, objectives, projects, tasks, metrics, recent conversation and changes, plus computed facts (on-time rates, date pushes, reply times, stale days, missing check-ins). The facts are inputs, not verdicts. You weigh them with judgement: a slip on the most important project matters more than three slips on a side project; a slow reply from someone on leave is not a signal; a missing check-in on a project due next week matters more than one due next year.
+Answer the question asked, directly, in plain English. Lead with the answer. Be specific: name people and projects, cite the facts you are relying on with their numbers, and link every project, task or objective you mention as [Name](#/project/ID), [Name](#/task/ID) or [Name](#/objective/ID). Say what you are unsure about and what you would need to know. Do not pad, do not moralise, do not invent anything that is not in the state. If the question cannot be answered from the state, say so.`;
+
+/* ---- the panel ---- */
+function AgentPanel({onClose, about}){
+  const g=useGtm(); const H=useHc(); const PM=usePerms(); const W=useWbr(); const store=useStore();
+  const me=g.myPerson; const email=String((store.user&&store.user.email)||'').toLowerCase();
+  const [q,setQ]=useState(about? about.question : ''); const [busy,setBusy]=useState(false); const [err,setErr]=useState('');
+  const starters=agentStarters(g.state.meta);
+  const takes=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email).sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-30);
+  const feedRef=useRef(null); useEffect(()=>{ const el=feedRef.current; if(el) el.scrollTop=el.scrollHeight; },[takes.length,busy]);
+  const cfg=(g.state.meta.workspace||{}).agent||{};
+  const ask=async()=>{ const question=q.trim(); if(!question||busy) return; setBusy(true); setErr('');
+    try{
+      const snap=cirriSnapshot(g,H,PM,W,{viewer:me?{id:me.id,name:me.name}:null}); const text=snapshotText(snap);
+      /* which model answers: the candidate for a share of questions, so versions can be compared on the same traffic */
+      const useCandidate = !!cfg.candidate && Math.random()*100 < (Number(cfg.candidateShare)||0);
+      const modelUsed = useCandidate? cfg.candidate : (cfg.model||'');
+      const prev=takes[takes.length-1]; const followUp = prev && (Date.now()-new Date(prev.at).getTime())<15*60000;
+      const regen = prev && prev.question.trim().toLowerCase()===question.toLowerCase();
+      const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
+      if(regen && prev.status==='answered' && !(prev.feedback||{}).rating){ react(prev,{rating:'down',note:((prev.feedback||{}).note||'')||'asked again'}); }
+      store.writeEntity('takes', base);
+      let answer='';
+      if(store.mode!=='cloud'){ answer='(Local mode: the model is not called. The snapshot has '+snap.counts.people+' people and '+snap.counts.activeProjects+' active projects, '+text.length.toLocaleString()+' characters of context.)'; }
+      else {
+        const fn=firebase.functions? firebase.functions().httpsCallable('askCirri') : null; if(!fn) throw new Error('The agent function is not deployed yet.');
+        const r=await fn({question, context:text, system:AGENT_SYSTEM, provider:cfg.provider||'openai', model:modelUsed}); answer=(r.data&&r.data.answer)||'';
+      }
+      store.writeEntity('takes', Object.assign({}, base, {answer, status:'answered', answeredAt:nowISO()})); setQ('');
+    }catch(e){ setErr(String(e.message||e)); }
+    setBusy(false); };
+  const [editing,setEditing]=useState(null);   /* {id, text} while rewriting an answer */
+  const fbRef=useRef({});   /* the latest feedback per take, so two reactions in a row both land */
+  const react=(t,patch)=>{ const cur=Object.assign({}, t.feedback||{}, fbRef.current[t.id]||{}, patch, {at:nowISO()}); fbRef.current[t.id]=cur; store.writeEntity('takes', Object.assign({}, t, {feedback:cur})); };
+  const render=(text)=>{ /* the model links [Name](#/project/ID); turn those into app links, keep the rest plain */
+    const parts=String(text||'').split(/(\[[^\]]+\]\(#\/[a-z]+\/[^)]+\))/g);
+    return parts.map((p,i)=>{ const m=p.match(/^\[([^\]]+)\]\((#\/[a-z]+\/[^)]+)\)$/); return m? React.createElement('a',{key:i,href:m[2],className:'agent-link',onClick:(e)=>{ e.preventDefault(); window.location.hash=m[2]; window.dispatchEvent(new HashChangeEvent('hashchange')); }},m[1]) : p; }); };
+  return React.createElement(React.Fragment,null,
+    React.createElement('div',{className:'drawer-scrim',onClick:onClose}),
+    React.createElement('div',{className:'drawer agent'},
+      React.createElement('div',{className:'dh agent-h'}, React.createElement('span',{className:'agent-orb'},React.createElement(Icon,{name:'sparkles',size:15})), React.createElement('div',{style:{flex:1}}, React.createElement('div',{className:'agent-word',style:{fontWeight:800,fontSize:16}},'Ask Cirri'), React.createElement('div',{className:'tiny muted'},'Answers from what you are allowed to see. Every answer is a take you can grade; that is how it learns.')), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
+      React.createElement('div',{className:'chat'},
+        React.createElement('div',{className:'chat-feed',ref:feedRef},
+          takes.length? takes.map(t=>React.createElement('div',{key:t.id,className:'take'+(t.kind==='brief'?' brief':'')},
+            t.kind==='brief'? React.createElement('div',{className:'take-brief-h'}, React.createElement('span',{className:'agent-word'},'Your brief'), React.createElement('span',{className:'tiny muted'},' \u00b7 '+fmtDate(t.at))) : React.createElement('div',{className:'take-q'}, t.question),
+            React.createElement('div',{className:'take-a'}, t.status==='answered'? React.createElement('div',{style:{whiteSpace:'pre-wrap'}},render(t.answer)) : React.createElement('span',{className:'tiny muted'},'Thinking\u2026')),
+            (editing&&editing.id===t.id)? React.createElement('div',{className:'take-edit'},
+              React.createElement('textarea',{className:'inp',rows:6,autoFocus:true,value:editing.text,onChange:e=>setEditing({id:t.id,text:e.target.value})}),
+              React.createElement('div',{style:{display:'flex',gap:8,justifyContent:'flex-end',marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setEditing(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',onClick:()=>{ react(t,{edit:editing.text.trim(), rating:(t.feedback||{}).rating||'down'}); setEditing(null); }},'Save my version'))) : null,
+            (t.feedback||{}).edit&&!(editing&&editing.id===t.id)? React.createElement('div',{className:'take-edited'}, React.createElement('div',{className:'tiny',style:{fontWeight:800,letterSpacing:'.05em',textTransform:'uppercase',color:'var(--deep)',marginBottom:4}},'Your version'), React.createElement('div',{style:{whiteSpace:'pre-wrap'}},render((t.feedback||{}).edit))) : null,
+            t.status==='answered'? React.createElement('div',{className:'take-fb'},
+              React.createElement('button',{className:'msg-act'+((t.feedback||{}).rating==='up'?' on':''),'data-tip':'Good take',onClick:()=>react(t,{rating:'up'})},'\ud83d\udc4d'),
+              React.createElement('button',{className:'msg-act'+((t.feedback||{}).rating==='down'?' on':''),'data-tip':'Off - I will say why',onClick:()=>react(t,{rating:'down'})},'\ud83d\udc4e'),
+              React.createElement('button',{className:'msg-act','data-tip':'Rewrite it the way it should have read - the strongest training signal there is',onClick:()=>setEditing({id:t.id,text:(t.feedback||{}).edit||t.answer||''})},'Rewrite'),
+              React.createElement('input',{className:'inp',style:{flex:1,padding:'4px 8px',fontSize:12.5},placeholder:'What it missed, overweighted, or got right (this trains it)',defaultValue:(t.feedback||{}).note||'',onBlur:e=>{ if(e.target.value!==((t.feedback||{}).note||'')) react(t,{note:e.target.value}); }})) : null))
+          : React.createElement('div',{className:'chat-empty'}, React.createElement(Icon,{name:'sparkles',size:26,strokeWidth:1.5}), React.createElement('div',null,'Ask about who is ahead, who is behind, what is stalled, what needs a decision. It answers from the live record, as you are allowed to see it.'))),
+        React.createElement('div',{className:'chat-composer'},
+          err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
+          React.createElement('div',{className:'starters'}, starters.map(st=>React.createElement('button',{key:st.id,className:'starter',disabled:busy,onClick:()=>setQ(st.prompt)},st.label))),
+          React.createElement('textarea',{className:'inp',rows:2,placeholder:'Who is behind this week, and why?',value:q,disabled:busy,onChange:e=>setQ(e.target.value),onKeyDown:e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); ask(); } }}),
+          React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',alignItems:'center',gap:8,marginTop:6}}, React.createElement('span',{className:'tiny muted'},'\u2318/Ctrl+Enter'), React.createElement('button',{className:'btn sm primary',disabled:busy||!q.trim(),onClick:ask}, busy?'Thinking\u2026':'Ask'))))));
 }
 
 /* ---------------- Drawer host ---------------- */
@@ -8264,6 +8436,8 @@ function applyPersonMerge(st, m){
 const PERM_CATALOG = [
   {g:'Visibility', id:'project.view', sec:'okr', kind:'view',    label:'See projects', scopable:true, why:'Which projects appear at all. Unlimited means everyone\u2019s; a limit is by who owns the project - their own department, their reporting chain, or named departments. Their own work always shows. Sensitive projects follow their own rule regardless.'},
   {g:'Visibility', id:'task.view', sec:'okr', kind:'view',       label:'See tasks', scopable:true, why:'Which tasks appear, by who holds them. A task under a project they cannot see is never shown.'},
+  {g:'Visibility', id:'agent.brief', sec:'okr', kind:'view', label:'Receive a proactive brief', why:'Cirri sends this person a scheduled brief on what changed, without being asked. It costs model time, so it is a permission. Administrators set the schedule.'},
+  {g:'Visibility', id:'agent.ask', sec:'okr', kind:'view', label:'Ask Cirri', why:'The agent answers from what the asker is allowed to see, never more. Every answer is recorded as a take with the asker\u2019s feedback.'},
   {g:'Visibility', id:'signins.view', sec:'admin', kind:'view', label:'See who signs in', why:'The sign-in log: who, when, which build and device. Workspace owners always can.'},
   {g:'Visibility', id:'work.others', sec:'okr', kind:'view',     label:'See other people\u2019s work', scopable:true, why:'Look at somebody else\u2019s My Work, or the whole team at once. Can be limited to certain departments; "their own department" means teammates only.'},
   {g:'Visibility', id:'scoreboard.view', sec:'okr', kind:'view', label:'See the Scoreboard', why:'Who is carrying what and what has shipped, for the whole team.'},
@@ -8423,7 +8597,7 @@ function permDefaultSets(){
       'req.create':A(), 'req.hire':AP(),
     }},
     head:{ id:'head', name:'Department head', note:'Cost, CAC and the finance plan; pay and records for everyone who reports up to them.', extends:'manager', grants:{
-      'plan.view':A(), 'finance.view':A(),
+      'plan.view':A(), 'finance.view':A(), 'agent.ask':A(), 'agent.brief':A(),
       'objective.delete':A(), 'metric.delete':A(), 'plan.edit':A(), 'readings.clear':A(), 'grade.reset':A(),
       'req.hire':A(), 'org.edit':A(), 'hc.settings':A(),
       'data.export':A(),
@@ -9325,7 +9499,7 @@ function hcTitle(view,leaders){
 const APPS=[{id:'okr',label:'OKRs',sub:'Objectives & accountability'},{id:'wbr',label:'Business Review',sub:'Weekly metrics & pacing'},{id:'hc',label:'People',sub:'Org chart, rosters & reqs'},{id:'cost',label:'Cost',sub:'Spend, CAC & payback'},{id:'admin',label:'Settings',sub:'Workspace, people, cost & more'}];
 /* Settings: General for what touches the whole tool, then one tab per section. Inside
    General a left list, Apple-style, so it can grow without becoming a wall. */
-const NAV_ADMIN=[{id:'admin_general',label:'General',ic:'settings'},{id:'admin_okrs',label:'OKRs',ic:'target'},{id:'admin_wbr',label:'Business Review',ic:'trending-up'},{id:'admin_people',label:'People',ic:'users'},{id:'admin_cost',label:'Cost',ic:'dollar'}];
+const NAV_ADMIN=[{id:'admin_general',label:'General',ic:'settings'},{id:'admin_agent',label:'Ask Cirri',ic:'sparkles'},{id:'admin_okrs',label:'OKRs',ic:'target'},{id:'admin_wbr',label:'Business Review',ic:'trending-up'},{id:'admin_people',label:'People',ic:'users'},{id:'admin_cost',label:'Cost',ic:'dollar'}];
 const GENERAL_PAGES=[{id:'workspace',label:'Workspace',ic:'building',admin:true},{id:'perms',label:'Permissions',ic:'lock',admin:true},{id:'notify',label:'Notifications',ic:'bell',admin:false},{id:'names',label:'Names & tabs',ic:'pencil',admin:true},{id:'signins',label:'Sign-ins',ic:'clock',perm:'signins.view'},{id:'data',label:'Data',ic:'database',admin:true}];
 const HEADER_EXTRA={
  scoreboard:'Sorted by active load. Click anyone for a performance drill-down.',
@@ -9339,7 +9513,7 @@ const HEADER_EXTRA={
  hc_requests:'Submit an idea or upvote existing ones. Admins set status and post a response the team sees.',
  hc_attrition:'To record a departure, open a person and hit Attrit - they land here automatically with full history.',
 };
-const TITLES_ADMIN={admin_general:['General','Everything that shapes the whole tool: the workspace, permissions, notifications, names, sign-ins, data'],admin_people:['People','Orgs, the level ladder, the manager floor, and the choices on a record'],admin_cost:['Cost','Fully loaded cost, exchange rates, buckets and channels'],admin_wbr:['Business Review','Sections and the review day'],admin_okrs:['OKRs','When work counts as stale, and how attention is ranked']};
+const TITLES_ADMIN={admin_agent:['Ask Cirri','The model, the prompts people start from, who gets a proactive brief and when, and the takes it learns from'],admin_general:['General','Everything that shapes the whole tool: the workspace, permissions, notifications, names, sign-ins, data'],admin_people:['People','Orgs, the level ladder, the manager floor, and the choices on a record'],admin_cost:['Cost','Fully loaded cost, exchange rates, buckets and channels'],admin_wbr:['Business Review','Sections and the review day'],admin_okrs:['OKRs','When work counts as stale, and how attention is ranked']};
 
 function GlobalSearch({nav,setView}){
   const { okrs, projects, tasks } = useGtm();
@@ -11571,6 +11745,86 @@ function SettingsGeneral({isAdmin, page, setPage}){
     React.createElement('div',{className:'gen-nav'}, pages.map(p=>React.createElement('button',{key:p.id,className:'gen-item'+(cur.id===p.id?' on':''),onClick:()=>setPage(p.id)}, React.createElement(Icon,{name:p.ic,size:14}), p.label))),
     React.createElement('div',{className:'gen-body'}, body));
 }
+const AGENT_STARTERS_DEFAULT=[
+  {id:'behind',label:'Who is behind?',prompt:'Who is behind this week, and why? Weigh the projects that matter most.'},
+  {id:'ahead',label:'Who is ahead?',prompt:'Who is doing the best work right now, judged by outcomes, not activity?'},
+  {id:'stalled',label:'What is stalled?',prompt:'Which active projects have stalled, what is in the way, and who needs to act?'},
+  {id:'decisions',label:'What needs a decision?',prompt:'What decisions are waiting on me or on leaders, and what is the cost of waiting?'},
+  {id:'replies',label:'Who is slow to reply?',prompt:'Who is slow to reply to requests, and does it matter given what they are working on?'},
+];
+function agentStarters(meta){ const w=(meta&&meta.workspace)||{}; return (Array.isArray((w.agent||{}).starters)&&w.agent.starters.length)? w.agent.starters : AGENT_STARTERS_DEFAULT; }
+function SettingsAgentTab({isAdmin}){
+  const [page,setPage]=useState('model'); const PM=usePerms();
+  const pages=[{id:'model',label:'Model',ic:'sparkles',body:React.createElement(SettingsAgent)},{id:'prompts',label:'Prompts',ic:'message-circle',body:React.createElement(SettingsAgentPrompts)},{id:'briefs',label:'Briefs',ic:'clock',body:React.createElement(SettingsAgentBriefs,{isAdmin})}].filter(p=> isAdmin || p.id==='prompts');
+  return React.createElement(SettingsSplit,{page,setPage,pages});
+}
+/* Prompts people start from. Editable so the company's own questions are the defaults. */
+function SettingsAgentPrompts(){
+  const g=useGtm(); const meta=g.state.meta||{}; const PM=usePerms(); const canEdit=PM.isOwner||PM.can('access.manage').allow;
+  const [list,setList]=useState(()=>agentStarters(meta).map(x=>({...x}))); const [msg,setMsg]=useState('');
+  const base=agentStarters(meta); const dirty=JSON.stringify(list)!==JSON.stringify(base);
+  const up=(i,patch)=>{ const n=list.slice(); n[i]=Object.assign({},n[i],patch); setList(n); setMsg(''); };
+  const save=()=>{ g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, (meta.workspace||{}).agent||{}, {starters:list.filter(x=>x.label.trim()&&x.prompt.trim()).map(x=>({id:x.id||uid('st'),label:x.label.trim(),prompt:x.prompt.trim()}))})})}); setMsg('Saved.'); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'Starter prompts',desc:'Shown as chips when the panel opens. The label is what people see; the prompt is what is asked. Write them in the company\u2019s words.'},
+      React.createElement('div',{className:'ledit'}, list.map((x,i)=>React.createElement('div',{key:x.id||i,className:'ledit-row',style:{alignItems:'flex-start'}},
+        React.createElement('input',{className:'inp',style:{flex:'0 1 200px',minWidth:140},placeholder:'Label',value:x.label,disabled:!canEdit,onChange:e=>up(i,{label:e.target.value})}),
+        React.createElement('textarea',{className:'inp',rows:2,style:{flex:'1 1 320px'},placeholder:'The question Cirri is asked',value:x.prompt,disabled:!canEdit,onChange:e=>up(i,{prompt:e.target.value})}),
+        canEdit? React.createElement('button',{className:'btn sm ghost icon','aria-label':'Remove',onClick:()=>{ setList(list.filter((y,j)=>j!==i)); setMsg(''); }},React.createElement(Icon,{name:'trash',size:13})) : null)),
+        canEdit? React.createElement('div',{className:'ledit-row add'}, React.createElement('button',{className:'btn sm',onClick:()=>{ setList(list.concat([{id:uid('st'),label:'',prompt:''}])); setMsg(''); }},'+ Add a prompt'), React.createElement('button',{className:'btn sm ghost',onClick:()=>{ setList(AGENT_STARTERS_DEFAULT.map(x=>({...x}))); setMsg(''); }},'Reset to defaults')) : null)),
+    canEdit? React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setList(base.map(x=>({...x}))); setMsg(''); }}) : null);
+}
+/* Who gets a proactive brief, and when. Administrators only; the recipient needs the permission. */
+function SettingsAgentBriefs({isAdmin}){
+  const g=useGtm(); const H=useHc(); const meta=g.state.meta||{}; const PM=usePerms();
+  const briefs=((meta.workspace||{}).agent||{}).briefs||[];
+  const write=(list)=>g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:Object.assign({}, (meta.workspace||{}).agent||{}, {briefs:list})})});
+  const people=H.employees.filter(e=>hcStatus(e)==='active'&&e.email).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+  const opts=people.filter(p=>!briefs.some(b=>b.email===String(p.email).toLowerCase())).map(p=>({id:p.id,label:p.name,sub:p.title||p.role||''}));
+  const DAYS=[['1','Mon'],['2','Tue'],['3','Wed'],['4','Thu'],['5','Fri']];
+  const add=(id)=>{ const p=people.find(x=>x.id===id); if(!p) return; write(briefs.concat([{id:uid('br'),email:String(p.email).toLowerCase(),personId:p.id,days:['1'],hour:8,scope:'org',enabled:true}])); };
+  const up=(i,patch)=>{ const n=briefs.slice(); n[i]=Object.assign({},n[i],patch); write(n); };
+  const canReceive=(email)=>{ const who=permWhoIs(email,PM.world); return PM.isOwner || (who? permCheck('agent.brief',who,PM.settings,PM.world,{}).allow : false); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'Proactive briefs',desc:'Cirri writes each person a brief on their schedule, on what changed since their last one: who moved, who slipped, what stalled, what needs them. It says \u201cno major changes\u201d when that is the truth. Sent to the Ask Cirri feed and as a Slack message; it can be graded like any take. Times are in the workspace time zone.'},
+      React.createElement('div',{className:'ledit'},
+        briefs.map((b,i)=>{ const p=H.employees.find(e=>e.id===b.personId)||{name:b.email}; const ok=canReceive(b.email);
+          return React.createElement('div',{key:b.id,className:'ledit-row org',style:{flexWrap:'wrap'}},
+            React.createElement('div',{style:{flex:'1 1 180px',minWidth:160}}, React.createElement('div',{style:{fontWeight:650,fontSize:13}},p.name), React.createElement('div',{className:'tiny',style:{color:ok?'var(--muted)':'var(--red)'}}, ok? b.email : 'No permission to receive a brief - give their set \u201cReceive a proactive brief\u201d')),
+            React.createElement('div',{className:'seg sm'}, DAYS.map(d=>React.createElement('button',{key:d[0],className:(b.days||[]).includes(d[0])?'on':'',onClick:()=>up(i,{days:(b.days||[]).includes(d[0])? (b.days||[]).filter(x=>x!==d[0]) : (b.days||[]).concat([d[0]]).sort()})},d[1]))),
+            React.createElement('select',{className:'inp',style:{width:110,flex:'0 0 auto'},value:b.hour,onChange:e=>up(i,{hour:Number(e.target.value)})}, [6,7,8,9,10,12,16,17].map(h=>React.createElement('option',{key:h,value:h},(h%12||12)+(h<12?' am':' pm')))),
+            React.createElement('div',{className:'seg sm'}, React.createElement('button',{className:b.scope==='org'?'on':'',onClick:()=>up(i,{scope:'org'})},'Their org'), React.createElement('button',{className:b.scope==='company'?'on':'',onClick:()=>up(i,{scope:'company'})},'Everything they can see')),
+            React.createElement('div',{className:'seg sm'}, React.createElement('button',{className:b.enabled!==false?'on':'',onClick:()=>up(i,{enabled:true})},'On'), React.createElement('button',{className:b.enabled===false?'on':'',onClick:()=>up(i,{enabled:false})},'Off')),
+            React.createElement('button',{className:'btn sm ghost icon','aria-label':'Remove',onClick:()=>write(briefs.filter((x,j)=>j!==i))},React.createElement(Icon,{name:'trash',size:13}))); }),
+        React.createElement('div',{className:'ledit-row add'}, React.createElement('div',{style:{flex:'1 1 260px'}}, React.createElement(SearchSelect,{options:opts,value:'',placeholder:'Add a person\u2026',onChange:(id)=>{ if(id) add(id); }})))),
+      !briefs.length? React.createElement('div',{className:'tiny muted',style:{marginTop:8}},'Nobody yet. Start with yourself and the department heads.') : null));
+}
+/* ---- Agent ---- */
+function SettingsAgent(){
+  const g=useGtm(); const meta=g.state.meta||{}; const cfg=Object.assign({provider:'openai',model:'',candidate:'',candidateShare:0},(meta.workspace||{}).agent||{});
+  const [d,setD]=useState(cfg); const [msg,setMsg]=useState('');
+  const dirty=JSON.stringify(d)!==JSON.stringify(cfg);
+  const save=()=>{ g.writeMeta({workspace:Object.assign({}, meta.workspace||{}, {agent:{provider:d.provider,model:String(d.model||'').trim(),candidate:String(d.candidate||'').trim(),candidateShare:Math.max(0,Math.min(100,Number(d.candidateShare)||0))}})}); setMsg('Saved.'); };
+  /* per-model scorecard: the way a candidate earns promotion */
+  const byModel={}; (g.state.takes||[]).filter(t=>t.status==='answered').forEach(t=>{ const k=t.model||'default'; const b=byModel[k]=byModel[k]||{n:0,up:0,down:0,edits:0,regen:0}; b.n++; const f=t.feedback||{}; if(f.rating==='up') b.up++; if(f.rating==='down') b.down++; if(f.edit) b.edits++; if(t.signals&&t.signals.regenerated) b.regen++; });
+  const takes=g.state.takes||[]; const graded=takes.filter(t=>t.feedback&&(t.feedback.rating||t.feedback.note));
+  const csv=()=>{ const rows=[['at','askedBy','question','answer','rating','edited_answer','note','model','arm','regenerated','follow_up_to']].concat(takes.map(t=>[t.at,t.askedBy,t.question,t.answer||'',(t.feedback||{}).rating||'',(t.feedback||{}).edit||'',(t.feedback||{}).note||'',t.model||'',t.arm||'',(t.signals||{}).regenerated?'yes':'',(t.signals||{}).followUpTo||''])); const blob=new Blob([rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cirri-takes-'+todayStr()+'.csv'; a.click(); };
+  return React.createElement('div',{className:'spage'},
+    React.createElement(AdminCard,{title:'Model',desc:'Which provider answers, and which of its models. The API key lives in Firebase as a secret, never here. The provider is a setting so the corpus is not tied to one vendor.'},
+      React.createElement(SettingRow,{label:'Provider'}, React.createElement('div',{className:'seg'}, React.createElement('button',{className:d.provider==='openai'?'on':'',onClick:()=>setD(Object.assign({},d,{provider:'openai'}))},'OpenAI'), React.createElement('button',{className:d.provider==='anthropic'?'on':'',onClick:()=>setD(Object.assign({},d,{provider:'anthropic'}))},'Anthropic'))),
+      React.createElement(SettingRow,{label:'Production model',hint:'Leave blank for the function\u2019s default. After a fine-tune has proven itself as the candidate, paste its name here.'}, React.createElement('input',{className:'inp',value:d.model,placeholder:'default',onChange:e=>setD(Object.assign({},d,{model:e.target.value}))})),
+      React.createElement(SettingRow,{label:'Candidate model',hint:'A newer or fine-tuned model to try on a share of questions. The scorecard below compares it with production on the same traffic.'}, React.createElement('input',{className:'inp',value:d.candidate,placeholder:'none',onChange:e=>setD(Object.assign({},d,{candidate:e.target.value}))})),
+      React.createElement(SettingRow,{label:'Share of questions to the candidate'}, React.createElement('select',{className:'inp',value:d.candidateShare,onChange:e=>setD(Object.assign({},d,{candidateShare:Number(e.target.value)}))}, [0,10,25,50].map(n=>React.createElement('option',{key:n,value:n},n+'%')))),
+      React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setD(cfg); setMsg(''); }})),
+    React.createElement(AdminCard,{title:'Takes',desc:'Every answer the agent has given, with the asker\u2019s feedback. This is the training corpus. Export it when there is enough to tune on.'},
+      React.createElement(SettingRow,{label:'On record'}, React.createElement('span',{style:{fontSize:13}}, takes.length+' takes \u00b7 '+graded.length+' with feedback \u00b7 '+takes.filter(t=>(t.feedback||{}).rating==='up').length+' good, '+takes.filter(t=>(t.feedback||{}).rating==='down').length+' off')),
+      React.createElement(SettingRow,{label:'Export'}, React.createElement('button',{className:'btn sm',disabled:!takes.length,onClick:csv},'Export takes as CSV'))),
+    React.createElement(AdminCard,{title:'Scorecard by model',desc:'How each model has done on the questions it answered. Promote a candidate when its good rate beats production over enough takes to mean something.'},
+      Object.keys(byModel).length? React.createElement('div',{className:'wbr-scroll'}, React.createElement('table',{className:'tbl wbr-tbl norow'},
+        React.createElement('thead',null,React.createElement('tr',null,['Model','Takes','Good','Off','Rewritten','Asked again','Good rate'].map((h,i)=>React.createElement('th',{key:h,style:i?{textAlign:'right'}:null},h)))),
+        React.createElement('tbody',null, Object.keys(byModel).map(k=>{ const b=byModel[k]; const rate=(b.up+b.down)? Math.round(100*b.up/(b.up+b.down)) : null; return React.createElement('tr',{key:k}, React.createElement('td',{style:{fontWeight:650}},k), [b.n,b.up,b.down,b.edits,b.regen].map((v,i)=>React.createElement('td',{key:i,style:{textAlign:'right',fontVariantNumeric:'tabular-nums'}},v)), React.createElement('td',{style:{textAlign:'right',fontWeight:700}}, rate==null?'\u2014':rate+'%')); }))))
+      : React.createElement('div',{className:'tiny muted'},'No answered takes yet.')));
+}
 /* ---- Sign-ins ---- */
 function SettingsSignins(){
   const g=useGtm(); const H=useHc(); const sessions=(g.state.sessions||[]).slice().sort((a,b)=>String(b.at).localeCompare(String(a.at)));
@@ -11721,7 +11975,8 @@ function App(){
   const landed=useRef(false);
   useEffect(()=>{ if(landed.current) return; if(mode!=='cloud'&&mode!=='local') return; landed.current=true; const f=firstTab('okr'); if(f&&f!==view) setView(f); },[mode]);
   const switchApp=(m)=>{ setAppMode(m); setSwOpen(false); setSideOpen(false); setDrawer(null); setView(firstTab(m)||(m==='hc'?HC_DEFAULT_VIEW:m==='cost'?'hc_finance':m==='wbr'?WBR_DEFAULT_VIEW:m==='admin'?'admin_workspace':'mywork')); };
-  const [generalPage,setGeneralPage]=useState('workspace');
+  const [generalPage,setGeneralPage]=useState('workspace'); const [agentOpen,setAgentOpen]=useState(false); const [agentAbout,setAgentAbout]=useState(null);
+  useEffect(()=>{ const f=(e)=>{ const d=e.detail||{}; setAgentAbout(d.question? d : null); setAgentOpen(true); }; window.addEventListener('cirri-ask',f); const k=(e)=>{ if((e.metaKey||e.ctrlKey)&&e.key==='j'){ e.preventDefault(); setAgentAbout(null); setAgentOpen(o=>!o); } }; window.addEventListener('keydown',k); return ()=>{ window.removeEventListener('cirri-ask',f); window.removeEventListener('keydown',k); }; },[]);
   useNotifications();
   const tabsRef=useRef(null);
   useEffect(()=>{ const el=tabsRef.current; if(!el) return; const mark=()=>{ el.classList.toggle('more-r', el.scrollWidth>el.clientWidth+1 && el.scrollLeft+el.clientWidth<el.scrollWidth-1); el.classList.toggle('more-l', el.scrollLeft>1); };
@@ -11809,7 +12064,7 @@ function App(){
 
   const syncPill = sync==='live'?{c:'var(--green)',t:'Live - synced'} : sync==='connecting'?{c:'var(--amber)',t:'Connecting\u2026'} : sync==='error'?{c:'var(--red)',t:'Sync error'} : {c:'var(--grey)',t:'Local only'};
   const isAdmin = mode!=='cloud' || (g.user && isOwnerEmail(g.user.email)) || PM.can('access.manage').allow;
-  const adminTabOk=(id)=> isAdmin || id==='admin_general' || (id==='admin_people'&&PM.can('hc.settings').allow) || (id==='admin_cost'&&PM.can('hc.settings').allow) || (id==='admin_wbr'&&PM.can('period.manage').allow);
+  const adminTabOk=(id)=> isAdmin || id==='admin_general' || (id==='admin_agent'&&PM.can('agent.ask').allow) || (id==='admin_people'&&PM.can('hc.settings').allow) || (id==='admin_cost'&&PM.can('hc.settings').allow) || (id==='admin_wbr'&&PM.can('period.manage').allow);
   const appOpen=(id)=> id==='admin'? NAV_ADMIN.some(n=>adminTabOk(n.id)) : id==='okr'? true : (id==='hc'?hcNav(hcLeadersList):id==='cost'?NAV_COST:NAV_WBR).filter(n=>n.action!=='settings').some(seeTab);
   const visibleApps = APPS.filter(a=>appOpen(a.id));
   const pendingForMe = (g.state.approvals||[]).filter(a=>a.status==='pending' && PM.me && a.approverEmail===PM.me.email).length;
@@ -11865,7 +12120,9 @@ function App(){
                       view===n.id&&React.createElement(Icon,{name:'check',size:13,style:{marginLeft:'auto',color:'var(--accent-700)'}}))))) : null)
                   : (function(){ const n=navList.find(x=>x.id===item.id); return n? tbTab(n,()=>goHcView(n)) : null; })()),
                 React.createElement('button',{key:'arr',className:'tb-arrange','data-tip':'Arrange tabs','aria-label':'Arrange tabs',onClick:()=>setArrange('hc')},React.createElement(Icon,{name:'menu',size:14})))),
+        React.createElement('svg',{width:0,height:0,style:{position:'absolute'},'aria-hidden':true}, React.createElement('defs',null, React.createElement('linearGradient',{id:'agentGrad',x1:'0',y1:'0',x2:'1',y2:'1'}, React.createElement('stop',{offset:'0',stopColor:'#2a9d9b'}), React.createElement('stop',{offset:'.55',stopColor:'#6d5ef0'}), React.createElement('stop',{offset:'1',stopColor:'#03243c'})))),
         React.createElement('div',{className:'tb-right'},
+          PM.can('agent.ask').allow? React.createElement('button',{className:'agent-btn',onClick:()=>setAgentOpen(true),'aria-label':'Ask Cirri'},React.createElement('span',{className:'agent-btn-in'},React.createElement(Icon,{name:'sparkles',size:14}),React.createElement('span',{className:'agent-word'},'Ask Cirri'))) : null,
           React.createElement('div',{className:'navhist'},
             React.createElement('button',{'data-tip':'Back','aria-label':'Back',disabled:!canBack,onClick:goBack},React.createElement(Icon,{name:'arrow-left',size:15})),
             React.createElement('button',{'data-tip':'Forward','aria-label':'Forward',disabled:!canForward,onClick:goForward},React.createElement(Icon,{name:'arrow-right',size:15}))),
@@ -11911,7 +12168,8 @@ function App(){
                 view==='wbr_plan'&&React.createElement(WbrRoCtx.Provider,{value:wbrRo},React.createElement(WbrPlan)),
                 view==='wbr_metrics'&&React.createElement(WbrLibrary))
             : appMode==='admin'
-            ? (view==='admin_people' ? React.createElement(SettingsPeople)
+            ? (view==='admin_agent' ? React.createElement(SettingsAgentTab,{isAdmin})
+               : view==='admin_people' ? React.createElement(SettingsPeople)
                : view==='admin_cost' ? React.createElement(SettingsCost)
                : view==='admin_wbr' ? React.createElement(SettingsWbr)
                : view==='admin_okrs' ? React.createElement(SettingsOkrs)
@@ -11926,6 +12184,7 @@ function App(){
                 (!['hc_finance','hc_split','hc_reporting','hc_attrition','hc_requests','hc_orgchart'].includes(view))&&React.createElement(HcLeaderRoster,{leaderId:view})))),
       React.createElement(DrawerHost,{drawer}),
       React.createElement(HcModalHost,{modal:hcModal,onClose:()=>setHcModal(null),onOpen:setHcModal}),
+      agentOpen&&React.createElement(AgentPanel,{about:agentAbout,onClose:()=>{ setAgentOpen(false); setAgentAbout(null); }}),
       arrange&&React.createElement(TabOrderModal,{app:arrange,base:arrange==='wbr'?NAV_WBR:arrange==='cost'?NAV_COST:arrange==='hc'?NAV_HC_FIXED:arrange==='admin'?NAV_ADMIN:NAV_OKR,nameOf,isAdmin,onClose:()=>setArrange(null)}),
       showSetup&&React.createElement(SetupScreen,{onClose:()=>setShowSetup(false)}),
       profile&&React.createElement(PersonProfileModal,{person:profile,onClose:()=>setProfile(null)}),
