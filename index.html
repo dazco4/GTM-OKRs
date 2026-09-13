@@ -422,6 +422,7 @@ textarea.inp{resize:vertical;min-height:62px;line-height:1.5}
 .ssel-car{position:absolute;right:9px;top:50%;transform:translateY(-50%);color:var(--muted-2);pointer-events:none;display:inline-flex}
 .ssel-menu{position:absolute;top:calc(100% + 5px);left:0;min-width:100%;width:max-content;max-width:min(460px,92vw);background:var(--panel);border:1px solid var(--line-strong);border-radius:10px;box-shadow:var(--shadow-lg);z-index:40;max-height:280px;overflow:auto;padding:4px}
 .ssel-menu.up{top:auto;bottom:calc(100% + 5px)}
+.mention-menu.up{top:auto;bottom:100%;margin-top:0;margin-bottom:2px}
 .ssel-name{flex:0 0 auto;white-space:nowrap}
 .ssel-menu.r{left:auto;right:0}
 .ssel-menu.up{top:auto;bottom:calc(100% + 5px)}
@@ -442,7 +443,9 @@ textarea.inp{resize:vertical;min-height:62px;line-height:1.5}
 /* ---------- Modal / Drawer ---------- */
 .scrim{position:fixed;inset:0;background:rgba(15,36,61,.42);backdrop-filter:blur(2px);z-index:90;display:flex;animation:fade .14s ease}
 @keyframes fade{from{opacity:0}to{opacity:1}}
-.modal{margin:auto;background:var(--panel);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:min(560px,94vw);max-height:90vh;overflow:auto;animation:pop .16s ease}
+.modal{margin:auto;background:var(--panel);border-radius:var(--r-lg);box-shadow:var(--shadow-lg);width:min(560px,94vw);max-height:calc(100dvh - 24px);display:flex;flex-direction:column;overflow:hidden;animation:pop .16s ease}
+.modal>.mh,.modal>.mf{flex:0 0 auto}
+.modal>.mb{flex:1 1 auto;overflow:auto;min-height:0}
 @keyframes pop{from{transform:translateY(8px) scale(.99);opacity:.6}to{transform:none;opacity:1}}
 .modal .mh{padding:18px 20px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
 .modal .mh h3{margin:0;font-size:16px;letter-spacing:-.2px}
@@ -452,7 +455,7 @@ textarea.inp{resize:vertical;min-height:62px;line-height:1.5}
 .x:hover{background:var(--sky-100);color:var(--ink)}
 
 .drawer-scrim{position:fixed;inset:0;background:rgba(15,36,61,.34);z-index:80;animation:fade .14s ease}
-.drawer{position:fixed;top:0;right:0;height:100vh;width:min(840px,96vw);background:var(--panel);box-shadow:var(--shadow-lg);z-index:85;display:flex;flex-direction:column;animation:slide .2s cubic-bezier(.2,.8,.2,1)}
+.drawer{position:fixed;top:0;right:0;height:100dvh;width:min(840px,96vw);background:var(--panel);box-shadow:var(--shadow-lg);z-index:85;display:flex;flex-direction:column;animation:slide .2s cubic-bezier(.2,.8,.2,1)}
 @keyframes slide{from{transform:translateX(40px);opacity:.4}to{transform:none;opacity:1}}
 .drawer .dh{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:12px}
 .drawer .db{padding:20px 22px;overflow:auto;flex:1}
@@ -894,6 +897,7 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .tb-company{display:inline-flex;align-items:center;gap:7px;padding:3px 9px 3px 4px;border:1px solid var(--line);border-radius:999px;font-size:12.5px;font-weight:700;color:var(--ink);margin:0 2px 0 6px;flex:0 0 auto;max-width:200px}
 .tb-company span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .login-company{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--ink);margin-bottom:10px;padding:6px 12px 6px 6px;border:1px solid var(--line);border-radius:999px;background:#fff}
+[data-tip].tip-up:hover::after{top:auto;bottom:calc(100% + 7px)}
 .perm-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fbfcfd;border-bottom:1px solid var(--line)}
 .perm-bulk{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
 .perm-bulk .btn.sm.ghost{padding:2px 7px;font-size:11px;text-transform:none;letter-spacing:0}
@@ -972,6 +976,7 @@ const BOOTSTRAP_OWNERS=['kev.dazkevich@moego.pet','kdazkevich@gmail.com'];
    install prompt so Settings can offer it, and know when we are running installed. */
 window.__installPrompt=null; window.__installed=false;
 try{ window.__installed = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone===true; }catch(e){}
+document.addEventListener('mouseover', e=>{ const t=e.target&&e.target.closest&&e.target.closest('[data-tip]'); if(!t) return; const r=t.getBoundingClientRect(); t.classList.toggle('tip-up', window.innerHeight-r.bottom<96); t.classList.toggle('tip-r', r.left+240>window.innerWidth-12 && !t.classList.contains('tip-l')); }, {passive:true});
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); window.__installPrompt=e; window.dispatchEvent(new Event('cirri-install-ready')); });
 window.addEventListener('appinstalled', ()=>{ window.__installed=true; window.__installPrompt=null; window.dispatchEvent(new Event('cirri-install-ready')); });
 if('serviceWorker' in navigator && location.protocol==='https:' && !/localhost|127\.0\.0\.1/.test(location.hostname)){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
@@ -2685,7 +2690,11 @@ function OkrCheck({selected,onChange,okrs}){
 }
 
 /* searchable dropdown - scales past a chip wall as the team and project list grow */
-function SearchSelect({options, value, onChange, multi, placeholder, up}){
+/* Which way a menu should open, measured from its anchor: up when there is more room
+   above than below and below is short. Every floating menu uses this. */
+function edgeFor(el, need){ if(!el) return {up:false,right:false}; const r=el.getBoundingClientRect(); const below=window.innerHeight-r.bottom, above=r.top; need=need||280;
+  return {up: below<need && above>below, right: r.left+460>window.innerWidth-16}; }
+function SearchSelect({options, value, onChange, multi, placeholder, up:forceUp}){
   const [q,setQ]=useState(''); const [open,setOpen]=useState(false); const [hi,setHi]=useState(0);
   const wrapRef=useRef(null); const inpRef=useRef(null);
   useEffect(()=>{ const h=(e)=>{ if(wrapRef.current && !wrapRef.current.contains(e.target)){ setOpen(false); setQ(''); } }; document.addEventListener('mousedown',h); return ()=>document.removeEventListener('mousedown',h); },[]);
@@ -2698,8 +2707,8 @@ function SearchSelect({options, value, onChange, multi, placeholder, up}){
   const filtered= !ql? options : options.map((o,i)=>({o,i,r:rank(o)})).filter(x=>x.r<9).sort((a,b)=>a.r-b.r || String(a.o.label).localeCompare(String(b.o.label)) || a.i-b.i).map(x=>x.o);
   useEffect(()=>{ setHi(0); },[q,open]);
   /* a menu wider than its field hangs off whichever side has room */
-  const [alignR,setAlignR]=useState(false);
-  useEffect(()=>{ if(!open||!wrapRef.current) return; const r=wrapRef.current.getBoundingClientRect(); setAlignR(r.left+460>window.innerWidth-16); },[open]);
+  const [alignR,setAlignR]=useState(false); const [up,setUp]=useState(!!forceUp);
+  useEffect(()=>{ if(!open||!wrapRef.current) return; const e=edgeFor(wrapRef.current,Math.min(300,40+filtered.length*38)); setAlignR(e.right); setUp(!!forceUp||e.up); },[open,filtered.length]);
   const pick=(o)=>{
     if(multi){ onChange(sel.includes(o.id)? sel.filter(x=>x!==o.id) : [...sel,o.id]); setQ(''); if(inpRef.current) inpRef.current.focus(); }
     else { onChange(o.id); setOpen(false); setQ(''); if(inpRef.current) inpRef.current.blur(); }
@@ -3078,7 +3087,7 @@ function MentionComposer({initial, placeholder, submitLabel, onSubmit, onCancel,
   const fmtKey=(e)=>{ if(!(e.metaKey||e.ctrlKey)) return false; if(e.key==='b'){ e.preventDefault(); wrap('*'); return true; } if(e.key==='i'){ e.preventDefault(); wrap('_'); return true; } if(e.shiftKey&&e.key==='x'){ e.preventDefault(); wrap('~'); return true; } return false; };
   return React.createElement('div',{style:{position:'relative',marginTop:compact?6:10}},
     React.createElement('textarea',{ref:taRef,className:'inp',rows:compact?1:2,placeholder:placeholder||'Comment\u2026 type @ to mention a teammate',value:text,onChange:e=>onChange(e.target.value),onKeyDown:e=>{ if(fmtKey(e)) return; if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); submit(); } if(e.key==='Escape'){ if(menu) setMenu(null); else if(onCancel) onCancel(); } }}),
-    menu && React.createElement('div',{className:'mention-menu'}, menu.options.map(p=>React.createElement('div',{key:p.id,className:'mention-opt',onMouseDown:(e)=>{e.preventDefault();pick(p);}}, React.createElement(Avatar,{person:p,size:'sm',noProfile:true}), React.createElement('span',null,p.name), p.role&&React.createElement('span',{className:'tiny muted'}, p.role)))),
+    menu && React.createElement('div',{className:'mention-menu'+(edgeFor(taRef.current,40+menu.options.length*36).up?' up':'')}, menu.options.map(p=>React.createElement('div',{key:p.id,className:'mention-opt',onMouseDown:(e)=>{e.preventDefault();pick(p);}}, React.createElement(Avatar,{person:p,size:'sm',noProfile:true}), React.createElement('span',null,p.name), p.role&&React.createElement('span',{className:'tiny muted'}, p.role)))),
     React.createElement('div',{style:{display:'flex',alignItems:'center',gap:8,marginTop:6}},
       !compact? React.createElement('div',{className:'fmt-bar'},
         React.createElement('button',{type:'button',className:'rte-b','data-tip':'Bold \u2318B',onMouseDown:e=>e.preventDefault(),onClick:()=>wrap('*')},React.createElement('b',null,'B')),
@@ -10527,7 +10536,7 @@ function HcAttrition(){
    ============================================================ */
 function HcModalShell({title,onClose,children,footer,wide,width}){
   return React.createElement('div',{className:'scrim',style:{overflow:'auto',alignItems:'flex-start'},onMouseDown:e=>{if(e.target===e.currentTarget)onClose();}},
-    React.createElement('div',{className:'modal',style:{width:width||(wide?'min(720px,96vw)':'min(520px,94vw)'),margin:'30px auto'}},
+    React.createElement('div',{className:'modal',style:{width:width||(wide?'min(720px,96vw)':'min(520px,94vw)'),margin:'16px auto',maxHeight:'calc(100dvh - 32px)'}},
       React.createElement('div',{className:'mh'}, React.createElement('h3',null,title), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
       React.createElement('div',{className:'mb'}, children),
       footer&&React.createElement('div',{className:'mf'}, footer)));
