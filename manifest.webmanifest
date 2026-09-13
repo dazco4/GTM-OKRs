@@ -1,0 +1,17 @@
+{
+  "name": "Cirri",
+  "short_name": "Cirri",
+  "description": "The company, in one clear view: objectives, projects, metrics, people and cost.",
+  "id": "/GTM-OKRs/",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f8fa",
+  "theme_color": "#03243c",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
