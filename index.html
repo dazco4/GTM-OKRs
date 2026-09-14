@@ -977,7 +977,13 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .take-row-h{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:13px}
 .take-row-h:hover{background:#f6f9fb}
 .take-row-b{padding:10px 14px 12px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5}
-.agent-tabs{padding:8px 16px 0;background:transparent;border-bottom:1px solid var(--line)}
+.agent-tabs{padding:8px 16px 0;background:transparent;border-bottom:1px solid var(--line);align-items:flex-end}
+.chat-ctl{margin-left:auto;display:flex;gap:6px;align-items:center;padding-bottom:6px}
+.chat-pick{position:relative}
+.chat-menu{position:absolute;right:0;top:calc(100% + 6px);width:min(380px,80vw);max-height:min(420px,60vh);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow-lg);z-index:5;padding:6px}
+.chat-menu-i{display:block;width:100%;text-align:left;border:none;background:transparent;border-radius:8px;padding:8px 10px;cursor:pointer}
+.chat-menu-i:hover{background:var(--sky-100)}.chat-menu-i.on{background:#f5f3ff}
+.chat-menu-t{font-size:13px;font-weight:650;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .perm-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fbfcfd;border-bottom:1px solid var(--line)}
 .perm-bulk{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
 .perm-bulk .btn.sm.ghost{padding:2px 7px;font-size:11px;text-transform:none;letter-spacing:0}
@@ -1060,7 +1066,7 @@ document.addEventListener('mouseover', e=>{ const t=e.target&&e.target.closest&&
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); window.__installPrompt=e; window.dispatchEvent(new Event('cirri-install-ready')); });
 window.addEventListener('appinstalled', ()=>{ window.__installed=true; window.__installPrompt=null; window.dispatchEvent(new Event('cirri-install-ready')); });
 if('serviceWorker' in navigator && location.protocol==='https:' && !/localhost|127\.0\.0\.1/.test(location.hostname)){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
-const BUILD='2026-09-14-1357';
+const BUILD='2026-09-14-1406';
 const WS_DEFAULTS={
   name:'', owners:[], allowedDomain:'', idleHours:8,
   checkins:{enabled:true, stalled:true},       /* weekly check-ins on active projects; a missing one counts as stalled */
@@ -2274,7 +2280,7 @@ function StoreProvider({children}){
       else firebase.auth().signInWithPopup(provider).catch(e=>flash('Sign-in failed: '+e.message));
     }catch(e){ flash('Auth not ready'); }
   },[flash]);
-  const signOut = useCallback(()=>{ try{ sessionStorage.removeItem('cirri_session'); }catch(e){} try{ firebase.auth().signOut(); }catch(e){} },[]);   /* a sign-out, by hand or by timeout, starts a fresh Ask Cirri session */
+  const signOut = useCallback(()=>{ try{ sessionStorage.removeItem('cirri_session'); sessionStorage.removeItem('cirri_chat'); }catch(e){} try{ firebase.auth().signOut(); }catch(e){} },[]);   /* a sign-out, by hand or by timeout, starts a fresh Ask Cirri session */
   useEffect(()=>{ const bump=()=>{ lastInput.current=Date.now(); }; ['keydown','mousedown','touchstart','input'].forEach(ev=>window.addEventListener(ev,bump,{passive:true})); return ()=>['keydown','mousedown','touchstart','input'].forEach(ev=>window.removeEventListener(ev,bump)); },[]);
   useEffect(()=>{ if(!newBuild) return; const t=setInterval(()=>{ if(Date.now()-lastInput.current>10000) location.reload(); },2000); return ()=>clearInterval(t); },[newBuild]);
   const [idleWarn,setIdleWarn]=useState(false);
@@ -5205,10 +5211,16 @@ function AgentPanel({onClose, about}){
   const me=g.myPerson; const email=String((store.user&&store.user.email)||'').toLowerCase();
   const [q,setQ]=useState(about? about.question : ''); const [busy,setBusy]=useState(false); const [err,setErr]=useState('');
   const starters=agentStarters(g.state.meta);
-  const [tab,setTab]=useState('now');
+  const [tab,setTab]=useState('chat');
   const mine=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
   const savedCount=mine.filter(t=>t.saved).length, briefCount=mine.filter(t=>t.kind==='brief').length;
-  const takes= tab==='saved'? mine.filter(t=>t.saved).slice(-60) : tab==='briefs'? mine.filter(t=>t.kind==='brief').slice(-30) : mine.filter(t=>t.kind!=='brief' && t.session===CIRRI_SESSION).slice(-30);
+  /* chats: every question belongs to a chat; the id lives in sessionStorage so a reload keeps the chat and New chat starts a fresh one */
+  const [chatId,setChatId]=useState(()=>{ try{ return sessionStorage.getItem('cirri_chat')||''; }catch(e){ return ''; } });
+  const chats=(()=>{ const m={}; mine.filter(t=>t.kind!=='brief'&&t.chatId).forEach(t=>{ const c=m[t.chatId]=m[t.chatId]||{id:t.chatId,title:t.question,at:t.at,last:t.at,n:0}; c.n++; if(String(t.at)>String(c.last)) c.last=t.at; }); return Object.values(m).sort((a,b)=>String(b.last).localeCompare(String(a.last))); })();
+  const [chatsOpen,setChatsOpen]=useState(false);
+  const pickChat=(id)=>{ setChatId(id); try{ if(id) sessionStorage.setItem('cirri_chat',id); else sessionStorage.removeItem('cirri_chat'); }catch(e){} setChatsOpen(false); setTab('chat'); };
+  const newChat=()=>pickChat('');
+  const takes= tab==='saved'? mine.filter(t=>t.saved).slice(-60) : tab==='briefs'? mine.filter(t=>t.kind==='brief').slice(-30) : (chatId? mine.filter(t=>t.kind!=='brief' && t.chatId===chatId) : []);
   const feedRef=useRef(null); useEffect(()=>{ const el=feedRef.current; if(el) el.scrollTop=el.scrollHeight; },[takes.length,busy]);
   const cfg=(g.state.meta.workspace||{}).agent||{};
   const ask=async()=>{ const question=q.trim(); if(!question||busy) return; setBusy(true); setErr('');
@@ -5219,11 +5231,14 @@ function AgentPanel({onClose, about}){
       const graded=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email && t.status==='answered' && t.feedback && ((t.feedback.edit&&t.feedback.edit.trim()) || t.feedback.note || t.feedback.rating)).sort((a,b)=>String(b.at).localeCompare(String(a.at)));
       const examples=graded.slice(0,12).map(t=>({question:t.question, answer:String(t.feedback.edit||t.answer||'').slice(0,1500), rating:t.feedback.rating||'', rewritten:!!(t.feedback.edit&&t.feedback.edit.trim()), note:String(t.feedback.note||'').slice(0,400)})).filter(x=>x.rewritten||x.note||x.rating==='up').slice(0,6);
       /* which model answers: the candidate for a share of questions, so versions can be compared on the same traffic */
+      const cid=chatId||uid('ch'); if(!chatId) pickChat(cid);
+      /* the chat so far travels with the question, so a follow-up means something */
+      const turns=mine.filter(t=>t.kind!=='brief'&&t.chatId===cid&&t.status==='answered').slice(-6).map(t=>({question:t.question, answer:String((t.feedback||{}).edit||t.answer||'').slice(0,1500)}));
       const useCandidate = !!cfg.candidate && Math.random()*100 < (Number(cfg.candidateShare)||0);
       const modelUsed = useCandidate? cfg.candidate : (cfg.model||'');
-      const sess=mine.filter(t=>t.kind!=='brief'&&t.session===CIRRI_SESSION); const prev=sess[sess.length-1]; const followUp = prev && (Date.now()-new Date(prev.at).getTime())<15*60000;
+      const sess=mine.filter(t=>t.kind!=='brief'&&t.chatId===cid); const prev=sess[sess.length-1]; const followUp = !!prev;
       const regen = prev && prev.question.trim().toLowerCase()===question.toLowerCase();
-      const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', session:CIRRI_SESSION, about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
+      const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', session:CIRRI_SESSION, chatId:cid, about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
       if(regen && prev.status==='answered' && !(prev.feedback||{}).rating){ react(prev,{rating:'down',note:((prev.feedback||{}).note||'')||'asked again'}); }
       ctxRef.current[id]=text;   /* kept so feedback can carry the full state it was judged against */
       store.writeEntity('takes', base);
@@ -5231,7 +5246,7 @@ function AgentPanel({onClose, about}){
       if(store.mode!=='cloud'){ answer='(Local mode: the model is not called. The snapshot has '+snap.counts.people+' people and '+snap.counts.activeProjects+' active projects, '+text.length.toLocaleString()+' characters of context.)'; }
       else {
         const fn=firebase.functions? firebase.functions().httpsCallable('askCirri') : null; if(!fn) throw new Error('The agent function is not deployed yet.');
-        const r=await fn({question, context:text, system:agentSystemFor(g.state.meta), provider:cfg.provider||'openai', model:modelUsed, examples}); answer=(r.data&&r.data.answer)||'';
+        const r=await fn({question, context:text, system:agentSystemFor(g.state.meta), provider:cfg.provider||'openai', model:modelUsed, examples, turns}); answer=(r.data&&r.data.answer)||'';
       }
       store.writeEntity('takes', Object.assign({}, base, {answer, status:'answered', answeredAt:nowISO()})); setQ('');
     }catch(e){ setErr(String(e.message||e)); }
@@ -5271,9 +5286,16 @@ function AgentPanel({onClose, about}){
     React.createElement('div',{className:'drawer agent'},
       React.createElement('div',{className:'dh agent-h'}, React.createElement('span',{className:'agent-orb-live'}, React.createElement('span',{className:'agent-orb-core'},React.createElement(Icon,{name:'sparkles',size:15}))), React.createElement('div',{style:{flex:1}}, React.createElement('div',{className:'agent-word',style:{fontWeight:800,fontSize:16}},'Ask Cirri'), React.createElement('div',{className:'tiny muted'},'Answers from what you are allowed to see. Every answer is a take you can grade; that is how it learns.')), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
       React.createElement('div',{className:'dtabs agent-tabs'},
-        React.createElement('button',{className:'dtab'+(tab==='now'?' on':''),onClick:()=>setTab('now')},'This session'),
+        React.createElement('button',{className:'dtab'+(tab==='chat'?' on':''),onClick:()=>setTab('chat')},React.createElement(Icon,{name:'message-circle',size:13}),' Chat'),
         React.createElement('button',{className:'dtab'+(tab==='saved'?' on':''),onClick:()=>setTab('saved')},React.createElement(Icon,{name:'star',size:13}),' Saved', savedCount? React.createElement('span',{className:'dtab-n'},savedCount):null),
-        React.createElement('button',{className:'dtab'+(tab==='briefs'?' on':''),onClick:()=>setTab('briefs')},React.createElement(Icon,{name:'clock',size:13}),' Briefs', briefCount? React.createElement('span',{className:'dtab-n'},briefCount):null)),
+        React.createElement('button',{className:'dtab'+(tab==='briefs'?' on':''),onClick:()=>setTab('briefs')},React.createElement(Icon,{name:'clock',size:13}),' Briefs', briefCount? React.createElement('span',{className:'dtab-n'},briefCount):null),
+        tab==='chat'? React.createElement('div',{className:'chat-ctl'},
+          React.createElement('div',{className:'chat-pick'},
+            React.createElement('button',{className:'btn sm',onClick:()=>setChatsOpen(o=>!o)}, React.createElement(Icon,{name:'history',size:13}),' Chats'+(chats.length?' ('+chats.length+')':'')),
+            chatsOpen? React.createElement('div',{className:'chat-menu'},
+              chats.length? chats.slice(0,30).map(c=>React.createElement('button',{key:c.id,className:'chat-menu-i'+(c.id===chatId?' on':''),onClick:()=>pickChat(c.id)}, React.createElement('div',{className:'chat-menu-t'},c.title), React.createElement('div',{className:'tiny muted'},relTime(c.last)+' \u00b7 '+c.n+(c.n===1?' question':' questions'))))
+              : React.createElement('div',{className:'tiny muted',style:{padding:'8px 10px'}},'No chats yet.')) : null),
+          React.createElement('button',{className:'btn sm primary',onClick:newChat,disabled:!chatId},React.createElement(Icon,{name:'plus-circle',size:13}),' New chat')) : null),
       React.createElement('div',{className:'chat'},
         React.createElement('div',{className:'chat-feed',ref:feedRef},
           takes.length? takes.map(t=>React.createElement('div',{key:t.id,className:'take'+(t.kind==='brief'?' brief':'')},
@@ -5304,14 +5326,14 @@ function AgentPanel({onClose, about}){
                 React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'Write it as a rule for every answer from now on, in general terms. Not \u201cKev only has one task\u201d but \u201cfewer than five items is not a track record\u201d.'),
                 React.createElement('textarea',{className:'inp',rows:2,autoFocus:true,value:ruleFor.text,onChange:e=>setRuleFor({id:t.id,text:e.target.value})}),
                 React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setRuleFor(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',disabled:!ruleFor.text.trim(),onClick:()=>saveRule(t,ruleFor.text)},'Save as a standing rule'))) : null) : null))
-          : tab==='saved'? React.createElement('div',{className:'agent-empty'}, React.createElement(Icon,{name:'star',size:28,strokeWidth:1.5}), React.createElement('div',{className:'agent-empty-sub'},'Nothing saved yet. Star an answer to keep it here; everything else clears when you close the tab.'))
+          : tab==='saved'? React.createElement('div',{className:'agent-empty'}, React.createElement(Icon,{name:'star',size:28,strokeWidth:1.5}), React.createElement('div',{className:'agent-empty-sub'},'Nothing saved yet. Star an answer to keep it here. Every chat stays under Chats; Saved is for the ones worth finding fast.'))
           : tab==='briefs'? React.createElement('div',{className:'agent-empty'}, React.createElement(Icon,{name:'clock',size:28,strokeWidth:1.5}), React.createElement('div',{className:'agent-empty-sub'},'Your proactive briefs land here. An administrator schedules them under Settings > Ask Cirri > Briefs.'))
           : React.createElement('div',{className:'agent-empty'},
               React.createElement('div',{className:'agent-orb-live big'}, React.createElement('span',{className:'agent-orb-core'}, React.createElement(Icon,{name:'sparkles',size:26}))),
               React.createElement('div',{className:'agent-word agent-word-live agent-empty-h'},'A Billion Neurons Firing'),
               React.createElement('div',{className:'agent-empty-sub'},'It answers from the live record, as you are allowed to see it. Grade what it says; that is how it learns your judgement.'),
               React.createElement('div',{className:'agent-cards'}, starters.map(st=>React.createElement('button',{key:st.id,className:'agent-card',onClick:()=>{ setQ(st.prompt); }},React.createElement('div',{className:'agent-card-l'},st.label),React.createElement('div',{className:'agent-card-p'},st.prompt)))))),
-        tab!=='now'? null : React.createElement('div',{className:'chat-composer'},
+        tab!=='chat'? null : React.createElement('div',{className:'chat-composer'},
           err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
           takes.length? React.createElement('div',{className:'starters'}, starters.map(st=>React.createElement('button',{key:st.id,className:'starter',disabled:busy,onClick:()=>setQ(st.prompt)},st.label))) : null,
           React.createElement('textarea',{className:'inp',rows:2,placeholder:'Who is behind this week, and why?',value:q,disabled:busy,onChange:e=>setQ(e.target.value),onKeyDown:e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); ask(); } }}),
@@ -11944,7 +11966,20 @@ function SettingsAgentPrompts(){
         React.createElement('textarea',{className:'inp',rows:2,style:{flex:'1 1 320px'},placeholder:'The question Cirri is asked',value:x.prompt,disabled:!canEdit,onChange:e=>up(i,{prompt:e.target.value})}),
         canEdit? React.createElement('button',{className:'btn sm ghost icon','aria-label':'Remove',onClick:()=>{ setList(list.filter((y,j)=>j!==i)); setMsg(''); }},React.createElement(Icon,{name:'trash',size:13})) : null)),
         canEdit? React.createElement('div',{className:'ledit-row add'}, React.createElement('button',{className:'btn sm',onClick:()=>{ setList(list.concat([{id:uid('st'),label:'',prompt:''}])); setMsg(''); }},'+ Add a prompt'), React.createElement('button',{className:'btn sm ghost',onClick:()=>{ setList(AGENT_STARTERS_DEFAULT.map(x=>({...x}))); setMsg(''); }},'Reset to defaults')) : null)),
-    canEdit? React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setList(base.map(x=>({...x}))); setMsg(''); }}) : null);
+    canEdit? React.createElement(SaveBar,{dirty,msg,onSave:save,onReset:()=>{ setList(base.map(x=>({...x}))); setMsg(''); }}) : null,
+    React.createElement(AskedQuestionsCard,{onAdd:canEdit? (q)=>{ setList(list.concat([{id:uid('st'),label:q.length>40? q.slice(0,38)+'\u2026' : q,prompt:q}])); setMsg(''); } : null}));
+}
+/* What people actually ask, grouped, most asked first. The corpus knows what people want to know before they ask again. */
+function AskedQuestionsCard({onAdd}){
+  const g=useGtm(); const takes=(g.state.takes||[]).filter(t=>t.kind!=='brief'&&t.question);
+  const norm=(q)=>String(q).toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+  const groups={}; takes.forEach(t=>{ const k=norm(t.question); if(!k) return; const gq=groups[k]=groups[k]||{q:t.question,n:0,who:new Set(),last:t.at,up:0}; gq.n++; gq.who.add(t.askedBy); if(String(t.at)>String(gq.last)) gq.last=t.at; if((t.feedback||{}).rating==='up') gq.up++; });
+  const rows=Object.values(groups).sort((a,b)=>b.n-a.n||String(b.last).localeCompare(String(a.last))).slice(0,25);
+  return React.createElement(AdminCard,{title:'What people ask',desc:'Every question asked so far, grouped, most asked first. A question that keeps coming back belongs in the starters, and in the brief before anyone has to ask it.'},
+    rows.length? rows.map((r,i)=>React.createElement('div',{key:i,className:'srow'},
+      React.createElement('div',{className:'srow-l'}, React.createElement('div',{className:'srow-lbl',style:{fontWeight:600}},r.q), React.createElement('div',{className:'srow-hint'},r.n+(r.n===1?' time':' times')+' \u00b7 '+r.who.size+(r.who.size===1?' person':' people')+' \u00b7 last '+relTime(r.last)+(r.up?' \u00b7 '+r.up+' rated good':''))),
+      React.createElement('div',{className:'srow-c'}, onAdd? React.createElement('button',{className:'btn sm',onClick:()=>onAdd(r.q)},'Add as a starter') : null)))
+    : React.createElement('div',{className:'tiny muted'},'Nothing asked yet.'));
 }
 /* Who gets a proactive brief, and when. Administrators only; the recipient needs the permission. */
 function SettingsAgentBriefs({isAdmin}){
