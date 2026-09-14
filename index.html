@@ -5817,7 +5817,8 @@ const WBR_UI={pk:null, wk:null};
 function useWbr(){
   const store=useStore();
   const st=store.state;
-  const people=st.people||[];
+  /* owners resolve against the roster, the same people list every other page uses; the legacy people list is only a fallback */
+  const people=useMemo(()=>{ try{ const emps=hcLinkManagers(st.hc_employees||[]); const L=hcLeaders({leaders:st.hc_leaders||[],employees:emps}); const fromRoster=peopleFromRoster(emps,L); return fromRoster.length? fromRoster.concat((st.people||[]).filter(p=>!fromRoster.some(r=>r.id===p.id))) : (st.people||[]); }catch(e){ return st.people||[]; } },[st.hc_employees,st.hc_leaders,st.people]);
   const S=useMemo(()=>wbrEffSettings(st.wbrSettings),[st.wbrSettings]);
   const metrics=useMemo(()=> (st.wbr_metrics||[]).slice().sort((a,b)=>(a.num||0)-(b.num||0)), [st.wbr_metrics]);
   const entries=st.wbr_entries||[];
