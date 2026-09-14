@@ -977,6 +977,7 @@ select.inp.acc-sel{width:auto;flex:0 0 auto;padding:4px 26px 4px 8px;font-size:1
 .take-row-h{display:flex;align-items:center;gap:10px;padding:9px 12px;cursor:pointer;font-size:13px}
 .take-row-h:hover{background:#f6f9fb}
 .take-row-b{padding:10px 14px 12px;border-top:1px solid var(--line);font-size:13.5px;line-height:1.5}
+.agent-tabs{padding:8px 16px 0;background:transparent;border-bottom:1px solid var(--line)}
 .perm-toolbar{display:flex;align-items:center;gap:8px;padding:8px 14px;background:#fbfcfd;border-bottom:1px solid var(--line)}
 .perm-bulk{display:inline-flex;align-items:center;gap:4px;margin-left:auto}
 .perm-bulk .btn.sm.ghost{padding:2px 7px;font-size:11px;text-transform:none;letter-spacing:0}
@@ -5202,7 +5203,10 @@ function AgentPanel({onClose, about}){
   const me=g.myPerson; const email=String((store.user&&store.user.email)||'').toLowerCase();
   const [q,setQ]=useState(about? about.question : ''); const [busy,setBusy]=useState(false); const [err,setErr]=useState('');
   const starters=agentStarters(g.state.meta);
-  const takes=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email).sort((a,b)=>String(a.at).localeCompare(String(b.at))).slice(-30);
+  const [tab,setTab]=useState('now');
+  const mine=(g.state.takes||[]).filter(t=>String(t.askedBy||'').toLowerCase()===email).sort((a,b)=>String(a.at).localeCompare(String(b.at)));
+  const savedCount=mine.filter(t=>t.saved).length, briefCount=mine.filter(t=>t.kind==='brief').length;
+  const takes= tab==='saved'? mine.filter(t=>t.saved).slice(-60) : tab==='briefs'? mine.filter(t=>t.kind==='brief').slice(-30) : mine.filter(t=>t.kind!=='brief' && t.session===CIRRI_SESSION).slice(-30);
   const feedRef=useRef(null); useEffect(()=>{ const el=feedRef.current; if(el) el.scrollTop=el.scrollHeight; },[takes.length,busy]);
   const cfg=(g.state.meta.workspace||{}).agent||{};
   const ask=async()=>{ const question=q.trim(); if(!question||busy) return; setBusy(true); setErr('');
@@ -5215,9 +5219,9 @@ function AgentPanel({onClose, about}){
       /* which model answers: the candidate for a share of questions, so versions can be compared on the same traffic */
       const useCandidate = !!cfg.candidate && Math.random()*100 < (Number(cfg.candidateShare)||0);
       const modelUsed = useCandidate? cfg.candidate : (cfg.model||'');
-      const prev=takes[takes.length-1]; const followUp = prev && (Date.now()-new Date(prev.at).getTime())<15*60000;
+      const sess=mine.filter(t=>t.kind!=='brief'&&t.session===CIRRI_SESSION); const prev=sess[sess.length-1]; const followUp = prev && (Date.now()-new Date(prev.at).getTime())<15*60000;
       const regen = prev && prev.question.trim().toLowerCase()===question.toLowerCase();
-      const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
+      const id=uid('tk'); const base={id, askedBy:email, askedById:me?me.id:'', at:nowISO(), question, kind:'ask', session:CIRRI_SESSION, about: about? {type:about.type,id:about.id} : null, provider:cfg.provider||'openai', model:modelUsed, arm:useCandidate?'candidate':'production', context:{chars:text.length, counts:snap.counts, build:BUILD}, answer:'', status:'pending', signals:{followUpTo: followUp? prev.id : '', regenerated: !!regen}, feedback:{rating:'',edit:'',note:'',at:''}};
       if(regen && prev.status==='answered' && !(prev.feedback||{}).rating){ react(prev,{rating:'down',note:((prev.feedback||{}).note||'')||'asked again'}); }
       ctxRef.current[id]=text;   /* kept so feedback can carry the full state it was judged against */
       store.writeEntity('takes', base);
@@ -5264,6 +5268,10 @@ function AgentPanel({onClose, about}){
     React.createElement('div',{className:'drawer-scrim',onClick:onClose}),
     React.createElement('div',{className:'drawer agent'},
       React.createElement('div',{className:'dh agent-h'}, React.createElement('span',{className:'agent-orb-live'}, React.createElement('span',{className:'agent-orb-core'},React.createElement(Icon,{name:'sparkles',size:15}))), React.createElement('div',{style:{flex:1}}, React.createElement('div',{className:'agent-word',style:{fontWeight:800,fontSize:16}},'Ask Cirri'), React.createElement('div',{className:'tiny muted'},'Answers from what you are allowed to see. Every answer is a take you can grade; that is how it learns.')), React.createElement('button',{className:'x',onClick:onClose},'\u00d7')),
+      React.createElement('div',{className:'dtabs agent-tabs'},
+        React.createElement('button',{className:'dtab'+(tab==='now'?' on':''),onClick:()=>setTab('now')},'This session'),
+        React.createElement('button',{className:'dtab'+(tab==='saved'?' on':''),onClick:()=>setTab('saved')},React.createElement(Icon,{name:'star',size:13}),' Saved', savedCount? React.createElement('span',{className:'dtab-n'},savedCount):null),
+        React.createElement('button',{className:'dtab'+(tab==='briefs'?' on':''),onClick:()=>setTab('briefs')},React.createElement(Icon,{name:'clock',size:13}),' Briefs', briefCount? React.createElement('span',{className:'dtab-n'},briefCount):null)),
       React.createElement('div',{className:'chat'},
         React.createElement('div',{className:'chat-feed',ref:feedRef},
           takes.length? takes.map(t=>React.createElement('div',{key:t.id,className:'take'+(t.kind==='brief'?' brief':'')},
@@ -5279,7 +5287,8 @@ function AgentPanel({onClose, about}){
                 React.createElement('button',{className:'fb-btn'+((t.feedback||{}).rating==='up'?' on good':''),onClick:()=>react(t,{rating:'up'})},React.createElement(Icon,{name:'check',size:13}),' Good take'),
                 React.createElement('button',{className:'fb-btn'+((t.feedback||{}).rating==='down'?' on off':''),onClick:()=>{ react(t,{rating:'down'}); setFbOpen(Object.assign({},fbOpen,{[t.id]:true})); }},React.createElement(Icon,{name:'x',size:13}),' Off'),
                 React.createElement('button',{className:'fb-btn',onClick:()=>setEditing({id:t.id,text:(t.feedback||{}).edit||t.answer||''})},React.createElement(Icon,{name:'pencil',size:13}),' Rewrite'),
-                React.createElement('button',{className:'fb-btn'+(fbOpen[t.id]?' on':''),onClick:()=>setFbOpen(Object.assign({},fbOpen,{[t.id]:!fbOpen[t.id]}))},React.createElement(Icon,{name:'sparkles',size:13}),' Teach Cirri')),
+                React.createElement('button',{className:'fb-btn'+(fbOpen[t.id]?' on':''),onClick:()=>setFbOpen(Object.assign({},fbOpen,{[t.id]:!fbOpen[t.id]}))},React.createElement(Icon,{name:'sparkles',size:13}),' Teach Cirri'),
+                React.createElement('button',{className:'fb-btn'+(t.saved?' on':''),style:{marginLeft:'auto'},'data-tip':t.saved?'Kept in Saved. Click to remove.':'Keep this answer in Saved',onClick:()=>store.writeEntity('takes', Object.assign({}, t, {saved:!t.saved}))},React.createElement(Icon,{name:'star',size:13,fill:t.saved?'currentColor':undefined}),t.saved?' Saved':' Save')),
               fbOpen[t.id]? React.createElement('div',{className:'teach'},
                 React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'What did it miss, overweight, or get right? Written feedback shapes the next answer and becomes training data.'),
                 React.createElement('textarea',{className:'inp',rows:3,autoFocus:true,value:fbText[t.id]!==undefined? fbText[t.id] : ((t.feedback||{}).note||''),placeholder:'e.g. Jessie is on leave, so her unanswered mentions are not a signal. The real risk is the SFDC project - it depends on two people who are both late.',onChange:e=>setFbText(Object.assign({},fbText,{[t.id]:e.target.value}))}),
@@ -5293,12 +5302,14 @@ function AgentPanel({onClose, about}){
                 React.createElement('div',{className:'tiny',style:{fontWeight:700,color:'var(--deep)',marginBottom:6}},'Write it as a rule for every answer from now on, in general terms. Not \u201cKev only has one task\u201d but \u201cfewer than five items is not a track record\u201d.'),
                 React.createElement('textarea',{className:'inp',rows:2,autoFocus:true,value:ruleFor.text,onChange:e=>setRuleFor({id:t.id,text:e.target.value})}),
                 React.createElement('div',{style:{display:'flex',justifyContent:'flex-end',gap:8,marginTop:6}}, React.createElement('button',{className:'btn sm',onClick:()=>setRuleFor(null)},'Cancel'), React.createElement('button',{className:'btn sm primary',disabled:!ruleFor.text.trim(),onClick:()=>saveRule(t,ruleFor.text)},'Save as a standing rule'))) : null) : null))
+          : tab==='saved'? React.createElement('div',{className:'agent-empty'}, React.createElement(Icon,{name:'star',size:28,strokeWidth:1.5}), React.createElement('div',{className:'agent-empty-sub'},'Nothing saved yet. Star an answer to keep it here; everything else clears when you close the tab.'))
+          : tab==='briefs'? React.createElement('div',{className:'agent-empty'}, React.createElement(Icon,{name:'clock',size:28,strokeWidth:1.5}), React.createElement('div',{className:'agent-empty-sub'},'Your proactive briefs land here. An administrator schedules them under Settings > Ask Cirri > Briefs.'))
           : React.createElement('div',{className:'agent-empty'},
               React.createElement('div',{className:'agent-orb-live big'}, React.createElement('span',{className:'agent-orb-core'}, React.createElement(Icon,{name:'sparkles',size:26}))),
               React.createElement('div',{className:'agent-word agent-word-live agent-empty-h'},'A Billion Neurons Firing'),
               React.createElement('div',{className:'agent-empty-sub'},'It answers from the live record, as you are allowed to see it. Grade what it says; that is how it learns your judgement.'),
               React.createElement('div',{className:'agent-cards'}, starters.map(st=>React.createElement('button',{key:st.id,className:'agent-card',onClick:()=>{ setQ(st.prompt); }},React.createElement('div',{className:'agent-card-l'},st.label),React.createElement('div',{className:'agent-card-p'},st.prompt)))))),
-        React.createElement('div',{className:'chat-composer'},
+        tab!=='now'? null : React.createElement('div',{className:'chat-composer'},
           err? React.createElement('div',{className:'tiny',style:{color:'var(--red)',marginBottom:6}},err) : null,
           takes.length? React.createElement('div',{className:'starters'}, starters.map(st=>React.createElement('button',{key:st.id,className:'starter',disabled:busy,onClick:()=>setQ(st.prompt)},st.label))) : null,
           React.createElement('textarea',{className:'inp',rows:2,placeholder:'Who is behind this week, and why?',value:q,disabled:busy,onChange:e=>setQ(e.target.value),onKeyDown:e=>{ if(e.key==='Enter'&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); ask(); } }}),
@@ -11521,6 +11532,8 @@ const MONTHS=['January','February','March','April','May','June','July','August',
    none, because Slack pings too; the scaffolding is here for the day it does not.
    ============================================================ */
 const NOTIFY_DEFAULTS={sound:'none', badge:true, desktop:false, muteUntil:''};
+/* one id per open tab: the Ask Cirri feed shows what was asked in this session, nothing older */
+const CIRRI_SESSION=(function(){ try{ let v=sessionStorage.getItem('cirri_session'); if(!v){ v='ss_'+Date.now().toString(36)+Math.random().toString(36).slice(2,6); sessionStorage.setItem('cirri_session',v); } return v; }catch(e){ return 'ss_'+Date.now().toString(36); } })();
 const NOTIFY_SOUNDS=[['none','None'],['ding','Ding'],['pop','Pop'],['knock','Knock'],['chime','Chime']];
 let _audioCtx=null;
 function notifyPlay(kind){
