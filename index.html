@@ -2558,6 +2558,8 @@ function useGtm(){
       if(!prev) logAct('created','task',out.id,out.title||'');
       else { const ch=diffAct(prev,out,TASK_AFIELDS); if(ch.length) logAct(prev.status!=='done'&&out.status==='done'?'completed':'updated','task',out.id,out.title||'',ch); }
       writeEntity('tasks', out);
+      /* work on a task is work on its projects: bump their lastActivity so the audit and the agent see it */
+      try{ const ids=Array.from(new Set((out.projectIds||[]).concat((prev&&prev.projectIds)||[]))); ids.forEach(pid=>{ const p=(s.state.projects||[]).find(x=>x.id===pid); if(p && !isClosedStatus(p.status)) writeEntity('projects', {...p, lastActivity:nowISO()}); }); }catch(e){ console.warn('touch project',e); }
     },
     deleteTask:(id)=>{ const curt=maps.task[id]; if(curt) logAct('deleted','task',id,curt.title||''); deleteEntity('tasks', id); },
     // next steps
@@ -4819,7 +4821,7 @@ function DeniedScreen(){
     React.createElement('div',{className:'card',style:{padding:'32px',width:'min(420px,92vw)',textAlign:'center'}},
       React.createElement('div',{style:{margin:'0 auto 12px',width:44}},React.createElement(Octo,{size:46})),
       React.createElement('h3',{style:{marginTop:0}},'Access not enabled'),
-      React.createElement('p',{className:'muted',style:{fontSize:13}}, (user&&user.email||'This account')+' is not on the allowlist for this workspace. Ask Kev to add you, then sign in again.'),
+      React.createElement('p',{className:'muted',style:{fontSize:13}}, (user&&user.email||'This account')+' is not on the sign-in list and not on the company email domain for this workspace. Ask an owner to add you or set the domain (Settings > General > Workspace > Sign-in), then sign in again.'),
       React.createElement('button',{className:'btn',onClick:signOut},'Sign out')));
 }
 /* ============================================================
