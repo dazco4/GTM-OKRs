@@ -2274,7 +2274,7 @@ function StoreProvider({children}){
       else firebase.auth().signInWithPopup(provider).catch(e=>flash('Sign-in failed: '+e.message));
     }catch(e){ flash('Auth not ready'); }
   },[flash]);
-  const signOut = useCallback(()=>{ try{ firebase.auth().signOut(); }catch(e){} },[]);
+  const signOut = useCallback(()=>{ try{ sessionStorage.removeItem('cirri_session'); }catch(e){} try{ firebase.auth().signOut(); }catch(e){} },[]);   /* a sign-out, by hand or by timeout, starts a fresh Ask Cirri session */
   useEffect(()=>{ const bump=()=>{ lastInput.current=Date.now(); }; ['keydown','mousedown','touchstart','input'].forEach(ev=>window.addEventListener(ev,bump,{passive:true})); return ()=>['keydown','mousedown','touchstart','input'].forEach(ev=>window.removeEventListener(ev,bump)); },[]);
   useEffect(()=>{ if(!newBuild) return; const t=setInterval(()=>{ if(Date.now()-lastInput.current>10000) location.reload(); },2000); return ()=>clearInterval(t); },[newBuild]);
   const [idleWarn,setIdleWarn]=useState(false);
