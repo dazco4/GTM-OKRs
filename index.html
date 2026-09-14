@@ -1060,7 +1060,7 @@ document.addEventListener('mouseover', e=>{ const t=e.target&&e.target.closest&&
 window.addEventListener('beforeinstallprompt', e=>{ e.preventDefault(); window.__installPrompt=e; window.dispatchEvent(new Event('cirri-install-ready')); });
 window.addEventListener('appinstalled', ()=>{ window.__installed=true; window.__installPrompt=null; window.dispatchEvent(new Event('cirri-install-ready')); });
 if('serviceWorker' in navigator && location.protocol==='https:' && !/localhost|127\.0\.0\.1/.test(location.hostname)){ window.addEventListener('load', ()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}); }); }
-const BUILD='2026-09-13-1441';
+const BUILD='2026-09-14-1357';
 const WS_DEFAULTS={
   name:'', owners:[], allowedDomain:'', idleHours:8,
   checkins:{enabled:true, stalled:true},       /* weekly check-ins on active projects; a missing one counts as stalled */
@@ -11657,6 +11657,8 @@ function SettingsWorkspace(){
           React.createElement(CompanyMark,{name:d.name,logo:d.logo,size:40}),
           React.createElement('label',{className:'btn sm',style:{cursor:'pointer'}},'Upload', React.createElement('input',{type:'file',accept:'image/*',style:{display:'none'},onChange:e=>{ const f=e.target.files&&e.target.files[0]; if(!f) return; const img=new Image(); img.onload=()=>{ const c=document.createElement('canvas'); const S=128; c.width=S; c.height=S; const x=c.getContext('2d'); const m=Math.min(img.width,img.height); x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S); up('logo',c.toDataURL('image/png')); }; img.src=URL.createObjectURL(f); }})),
           d.logo? React.createElement('button',{className:'btn sm ghost',onClick:()=>up('logo','')},'Remove') : null))),
+    React.createElement(AdminCard,{title:'This build',desc:'Which version of Cirri this window is running. Everyone gets a new build within a minute of it being published; if a fix seems missing, check this first.'},
+      React.createElement(SettingRow,{label:'Build'}, React.createElement('code',{style:{fontSize:13,fontWeight:700}},BUILD))),
     React.createElement(InstallCard,null),
     React.createElement(AdminCard,{title:'Owners',desc:'Owners pass every permission and are the only people who can change permissions, the sign-in list, and pay access. There must always be at least one. You cannot remove yourself.'},
       React.createElement(ListEditor,{items:d.owners,onChange:v=>up('owners',v),placeholder:'name@company.com',inUse:(e)=>String(e).toLowerCase()===me? 'You cannot remove yourself as an owner.' : '',minItems:1})),
