@@ -8714,7 +8714,11 @@ function permSerialize(P){
 }
 function permSerializeChecked(P){ const out=permSerialize(P); permAssertSafe(out); return out; }
 function permParse(raw){
-  const sets={}; Object.keys(raw.sets||{}).forEach(k=>{ const s=raw.sets[k]; const id=permDec(k); sets[id]=Object.assign({},s,{id, grants:permMapKeys(s.grants||{},permDec)}); });
+  const D=permDefaultSets().sets;
+  const sets={}; Object.keys(raw.sets||{}).forEach(k=>{ const s=raw.sets[k]; const id=permDec(k); const grants=permMapKeys(s.grants||{},permDec);
+    /* a permission added after this set was saved has no entry here; it takes the built-in default for the same set, so new features arrive with their intended access and nothing customised moves */
+    if(D[id]) Object.keys(D[id].grants||{}).forEach(pid=>{ if(!(pid in grants)) grants[pid]=Object.assign({},D[id].grants[pid]); });
+    sets[id]=Object.assign({},s,{id, grants}); });
   const overrides={}; Object.keys(raw.overrides||{}).forEach(k=>{ const o=raw.overrides[k]; overrides[permDec(k)]=Object.assign({},o,{grants:permMapKeys(o.grants||{},permDec)}); });
   const as=raw.assign||{};
   return { v:2, assignBy:raw.assignBy==='title'?'title':'level', sets, overrides, passwords:raw.passwords==='off'?'off':'on',
